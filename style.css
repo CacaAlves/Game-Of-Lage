@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+}
+img {
+    display: none;
+}
+canvas {
+    background-color: rgb(233, 232, 232);
+    position: absolute;
+    top: 2.5vh;
+    left: 2.5vw;
+
+    border: 1px solid black;
+}
