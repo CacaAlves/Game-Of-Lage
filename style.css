@@ -10,8 +10,10 @@ audio {
 canvas {
     background-color: rgb(233, 232, 232);
     position: absolute;
-    top: 2.5vh;
-    left: 2.5vw;
+    top: 0.5vh;
+    left: 0.5vw; 
 
     border: 1px solid black;
+    width: 99%;
+    height: 99%;
 }

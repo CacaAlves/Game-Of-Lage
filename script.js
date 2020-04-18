@@ -239,6 +239,13 @@ class Character {
 
 let canvas = document.getElementById("canvas");
 
+let stylew = window.getComputedStyle(canvas).width;
+let value = parseInt(stylew.substr(0,stylew.search("px")));
+canvas.width = value;
+let styleh = window.getComputedStyle(canvas).height;
+value = parseInt(styleh.substr(0,styleh.search("px")));
+canvas.height = value;
+
 const SCREEN_WIDTH = canvas.clientWidth;
 const SCREEN_HEIGHT = canvas.clientHeight;
 
