@@ -28,7 +28,12 @@ class Game {
         this.cobraSong = document.getElementById("Cobra-Venenosa-audio");
         this.querTomarBombaSong = document.getElementById("Quer-Tomar-Bomba-audio");
 
-        this.mainCharater = new Character("Evaldo", this, document.getElementById("Evaldo-right-img"), document.getElementById("cape-right"));
+        this.mainCharater = new Character("Evaldo", 
+                            this, 
+                            document.getElementById("Evaldo-left-img"), 
+                            document.getElementById("Evaldo-right-img"), 
+                            document.getElementById("cape-left"),
+                            document.getElementById("cape-right"));
         this.gameObjects = [this.mainCharater];
     }
     menu() {
@@ -203,11 +208,27 @@ class InputHandler {
             switch (event.keyCode) {
                 case 32:
                     if (this.game.gameStage == this.game.GAME_STAGE.MENU) {
-                        this.game.menuAnimationOn = true;
-                        this.game.cobraSong.play();
+                        if(this.game.menuAnimationOn != true) {
+                            this.game.menuAnimationOn = true;
+                            this.game.cobraSong.play();
+                        } else {
+                            this.game.runGame();
+                            this.game.cobraSong.pause();
+                        }
                     }
                     break;
-
+                case 37:
+                case 65:
+                    this.game.mainCharater.walkLeft();
+                    break;
+                case 39:
+                case 68:
+                    this.game.mainCharater.walkRight();
+                    break;
+                case 38:
+                case 87:
+                    this.game.mainCharater.jump();
+                    break;
                 default:
                     break;
             }
@@ -215,27 +236,65 @@ class InputHandler {
     }
 }
 class Character {
-    constructor(name, game, image, cape) {
+    constructor(name, game, imageLeft, imageRight, capeLeft, capeRight) {
         this.name = name;
         this.game = game;
-        this.image = image;
-        this.cape = cape;
+        this.imageLeft = imageLeft;
+        this.imageRight = imageRight;
+        this.capeLeft = capeLeft;
+        this.capeRight = capeRight;
+
+        this.image = this.imageRight;
+        this.cape = this.capeRight;
+
         this.position = { x: 100, y: 50 };
         this.speed = { x: 0, y: 0 };
         this.width = 110;
         this.height = 110;
-        this.cape = cape
         this.capeWidth = this.width + 70;
         this.capeHeight = this.height + 70;
-        this.capePosition = { x: this.position.x - (this.capeWidth / 2.4), y: (this.position.y + (this.height / 1.3)) };
+        this.capePosition = { x: this.position.x - (this.capeWidth / 3), y: (this.position.y + (this.height / 1.3)) };
 
     }
     draw() {
         this.game.ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
         this.game.ctx.drawImage(this.cape, this.capePosition.x, this.capePosition.y, this.capeWidth, this.capeHeight);
     }
+    walkLeft() {
+        this.image = this.imageLeft;
+        this.cape = this.capeLeft;
+        this.speed.x = -200;
+        if (this.position.x < 0) {
+            this.position.x = 0;
+        }
+    }
+    walkRight() {
+        this.image = this.imageRight;
+        this.cape = this.capeRight;
+        if (this.position.x + this.width > this.game.width) {
+            this.position.x = this.game.width - this.width;
+        }
+        else {
+            this.speed.x = 200;
+        }
+    }
+    jump() {
+        if (this.position.y < 10) {
+            this.speed.y = 5;
+        }
+    }
     update() {
-        this.capePosition = { x: this.position.x - (this.capeWidth / 2.4), y: (this.position.y + (this.height / 1.3)) };
+        this.position.x += this.speed.x;
+        this.position.y += this.speed.y;
+        this.speed.x = 0;
+        if (this.speed.y != 0) {
+            this.speed.y--;
+        }
+        if (this.image == this.imageRight) {
+            this.capePosition = { x: this.position.x - (this.capeWidth / 3), y: (this.position.y + (this.height / 1.3)) };
+        } else {
+            this.capePosition = { x: this.position.x - (this.width / 6), y: (this.position.y + (this.height / 1.3)) };
+        }
     }
 }
 
