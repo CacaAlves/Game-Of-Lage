@@ -25,7 +25,8 @@ class Game {
             50, 50, 200, 100);
         this.initionAnimationBeforeMago = true;
 
-        this.CobraSong = document.getElementById("Cobra-Venenosa-audio");
+        this.cobraSong = document.getElementById("Cobra-Venenosa-audio");
+        this.querTomarBombaSong = document.getElementById("Quer-Tomar-Bomba-audio");
 
         this.mainCharater = new Character("Evaldo", this, document.getElementById("Evaldo-right-img"), document.getElementById("cape-right"));
         this.gameObjects = [this.mainCharater];
@@ -48,7 +49,7 @@ class Game {
             }
             this.camaro.position.x += 2;
             if (this.camaro.position.x >= this.width) {
-                this.CobraSong.pause();
+                this.cobraSong.pause();
 
                 let text1 = "Carai, eu sou um merda, mermão... Eu moro num ônibus!!!";
                 let text2 = "Sou muito pobre... Queria tanto ser o dono da Lage!"
@@ -154,6 +155,7 @@ class Game {
     runGame() {
         if (this.gameStage == this.GAME_STAGE.MENU) {
             this.gameStage = this.GAME_STAGE.RUNNING;
+            this.querTomarBombaSong.play();
         }
     }
     drawText(text, font, color ,positionX, positionY) {
@@ -202,7 +204,7 @@ class InputHandler {
                 case 32:
                     if (this.game.gameStage == this.game.GAME_STAGE.MENU) {
                         this.game.menuAnimationOn = true;
-                        this.game.CobraSong.play();
+                        this.game.cobraSong.play();
                     }
                     break;
 
