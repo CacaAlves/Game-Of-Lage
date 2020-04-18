@@ -55,7 +55,7 @@ class Game {
             this.camaro.position.x += 2;
             if (this.camaro.position.x >= this.width) {
                 this.cobraSong.pause();
-
+                let text0 = "(Aperte space para pular animação)";
                 let text1 = "Carai, eu sou um merda, mermão... Eu moro num ônibus!!!";
                 let text2 = "Sou muito pobre... Queria tanto ser o dono da Lage!"
                 let text3 = "Quero mudar de vida... Mas não quero entrar pro crime!";
@@ -72,7 +72,10 @@ class Game {
                 let color = "black";
                 let positionX = this.mainCharater.position.x + 400;
                 let positionY = this.mainCharater.position.y - 30;
-                if (this.text1Counter < 300) {
+                if (this.text0Counter < 150) {
+                    this.drawText(text0, "20px Arial", color, positionX, positionY);
+                    this.text0Counter++;
+                } else if (this.text1Counter < 300) {
                     this.drawText(text1, font, color, positionX, positionY);
                     this.text1Counter++;
                     this.bus.draw();
@@ -134,6 +137,7 @@ class Game {
             }
         }
         else {
+            this.text0Counter = 0;
             this.text1Counter = 0;
             this.text2Counter = 0;
             this.text3Counter = 0;
@@ -219,11 +223,11 @@ class InputHandler {
                     break;
                 case 37:
                 case 65:
-                    this.game.mainCharater.walkLeft();
+                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) this.game.mainCharater.walkLeft();
                     break;
                 case 39:
                 case 68:
-                    this.game.mainCharater.walkRight();
+                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) this.game.mainCharater.walkRight();
                     break;
                 case 38:
                 case 87:
