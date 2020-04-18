@@ -4,6 +4,9 @@ body {
 img {
     display: none;
 }
+audio {
+    display: none;
+}
 canvas {
     background-color: rgb(233, 232, 232);
     position: absolute;

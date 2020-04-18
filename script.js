@@ -3,42 +3,58 @@ class Game {
         this.width = gameWidth;
         this.height = gameHeight;
         this.ctx = ctx;
-        this.GAME_STAGE = GAME_STAGE;
+        this.GAME_STAGE = GAME_STAGE
         this.gameStage = this.GAME_STAGE.MENU;
-        this.ip = new InputHandler(this);
+        this.ih = new InputHandler(this);
     }
     test() {
         console.log("a");
     }
     start() {
+        this.menuAnimationOn = false;
+        this.camaro = new Car(this, 
+            document.getElementById("camaro-img"),
+            50, 50, 200, 100);
+        this.CobraSong = document.getElementById("Cobra-Venenosa-audio");
         this.mainCharater = new Character("Evaldo", this, document.getElementById("Evaldo-right-img"), document.getElementById("cape-right"));
         this.gameObjects = [this.mainCharater];
     }
     menu() {
+        if (this.menuAnimationOn) {
+            this.mainCharater.position.y = this.height - this.mainCharater.capeHeight - this.mainCharater.height + (this.mainCharater.height / 3);
+            this.mainCharater.draw();
+            let bus = document.getElementById("bus-img");
+            this.ctx.drawImage(bus,
+                              (this.mainCharater.position.x + (this.mainCharater.width * 2)),
+                              (this.height - (this.mainCharater.height * 3)), 
+                              (this.mainCharater.width * 4),
+                              (this.mainCharater.capeHeight * 2.5)
+                              );
+            this.camaro.draw();
+            this.camaro.position.x += 2;
+            if (this.camaro.position.x >= this.width ) {
+                this.runGame();
+                this.CobraSong.pause();
+            }
+        }
+        else {
+
             this.ctx.rect(0, 0, this.width, this.height);
             this.ctx.fillStyle = "rgb(0,0,0)";
             this.ctx.fill();
-    
+            
             this.ctx.font = "50px Arial";
             this.ctx.fillStyle = "white";
             this.ctx.textAlign = "center";
             this.ctx.fillText("Press space to start the game", this.width / 2, this.height / 2);
-    
+            
             this.mainCharater.draw();
+        }
     }
     runGame() {
         if (this.gameStage == this.GAME_STAGE.MENU) {
             this.gameStage = this.GAME_STAGE.RUNNING;
         }
-    }
-    initialAnimation() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
-
-        this.mainCharater.position.y = this.height - this.mainCharater.capeHeight - this.mainCharater.height + (this.mainCharater.height / 3);
-        this.mainCharater.update();
-        this.mainCharater.draw();
-
-        this.runGame();
     }
     draw() {
         switch (this.gameStage) {
@@ -56,13 +72,33 @@ class Game {
         this.gameObjects.forEach(object => object.update());
     }
 }
+class Car {
+    constructor(game, img, positionX, positionY, width, height, ) {
+        this.game = game;
+        this.img = img;
+        this.position = {x : positionX, y : positionY};
+        this.width = width;
+        this.height = height;
+    }
+    draw() {
+        this.game.ctx.drawImage(this.img,
+            (this.position.x),
+            (this.position.y), 
+            (this.width),
+            (this.height)
+            );
+    }
+}
 class InputHandler {
     constructor(game) {
         this.game = game;
         document.addEventListener("keydown", event => {
             switch (event.keyCode) {
                 case 32:
-                    this.game.initialAnimation();
+                    if (this.game.gameStage == this.game.GAME_STAGE.MENU) {
+                       this.game.menuAnimationOn = true;
+                       this.game.CobraSong.play();
+                    }
                     break;
 
                 default:
