@@ -1,8 +1,9 @@
 const ArthurLevel = {
-    m1X: [200, 400, 600, 800, 1000],
+    m1X: [200, 700, 1600, 1800, 3000],
     m2X: [120, 220, 550, 900],
-    m1Left: document.getElementById("José-left"),
-    m1Right: document.getElementById("José-right"),
+    blocks: [200, 300, 400, 500, 900, 1500, 5000, 5100, 5200, 5300],
+    m1Left: document.getElementById("Loli-left"),
+    m1Right: document.getElementById("Loli-right"),
     m2Left: document.getElementById("Felipe-left"),
     m2Right: document.getElementById("Felipe-right")
 }
@@ -42,7 +43,9 @@ class Game {
             document.getElementById("Evaldo-left-img"),
             document.getElementById("Evaldo-right-img"),
             document.getElementById("cape-left"),
-            document.getElementById("cape-right"));
+            document.getElementById("cape-right"),
+            document.getElementById("cape-left-rotate"),
+            document.getElementById("cape-right-rotate"));
 
         this.gameObjects = [this.mainCharater];
     }
@@ -145,7 +148,7 @@ class Game {
                     this.mago.draw();
                 } else {
                     this.narutoSadSong.pause();
-                    this.level = new Level(this, ArthurLevel.m1X, ArthurLevel.m2X, ArthurLevel.m1Left,
+                    this.level = new Level(this, ArthurLevel.m1X, ArthurLevel.m2X, ArthurLevel.blocks, ArthurLevel.m1Left,
                         ArthurLevel.m1Right, ArthurLevel.m2Left, ArthurLevel.m2Right);
                     this.gameObjects.push(this.level);
                     this.runGame();
@@ -177,10 +180,6 @@ class Game {
             this.mainCharater.draw();
         }
     }
-    createBlock() {
-        this.block = new Block(this);
-        this.gameObjects.push(this.block);
-    }
     runGame() {
         if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.PAUSED) {
             this.gameStage = this.GAME_STAGE.RUNNING;
@@ -207,8 +206,7 @@ class Game {
         this.ctx.textAlign = "center";
         this.ctx.fillText("Paused", this.width / 2, this.height / 2);
 
-        this.mainCharater.draw();
-        this.block.draw();
+        this.gameObjects.forEach(obj => obj.draw());
 
     }
     drawText(text, font, color, positionX, positionY) {
@@ -275,42 +273,48 @@ class Monster {
     }
     update() {
         if (this.position.x > this.game.mainCharater.position.x) {
-            this.position.x -= 10;
+            this.position.x -= Math.floor(Math.random() * 5);
             this.img = this.imgLeft;
         } else if (this.position.x < this.game.mainCharater.position.x) {
-            this.position.x += 10;
+            this.position.x += Math.floor(Math.random() * 5);
             this.img = this.imgRight;
         }
     }
 }
 class Level {
-    constructor(game, monsters1XPos, monsters2XPos, monster1Left, monster1Right, monster2Left, monster2Right) {
+    constructor(game, monsters1XPos, monsters2XPos, blocksX, monster1Left, monster1Right, monster2Left, monster2Right) {
         this.game = game;
         this.monsters1XPos = monsters1XPos.slice();
         this.monsters2XPos = monsters2XPos.slice();
+        this.blocksX = blocksX.slice();
         this.monster1Left = monster1Left;
         this.monster1Right = monster1Right;
         this.monster2Left = monster2Left;
         this.monster2Right = monster2Right;
 
         this.monsters = [];
+
+        this.blocksX.forEach(blockX => this.drawBlocks(blockX));
     }
     draw() {
         if (this.monsters.length != 0) this.monsters.forEach(m => m.draw());
     }
     dropMonster(monsterX, index, array, increment) {
         if (monsterX == this.game.x) {
-            let m = new Monster(this.game, this.monster1Left, this.monster1Right, (monsterX + increment),
-                (this.game.mainCharater.position.y + ((this.game.mainCharater.height + this.game.mainCharater.capeHeight)) / 2),
-                this.game.mainCharater.width, this.game.mainCharater.height / 2);
+            let m = new Monster(this.game, this.monster1Left, this.monster1Right, (this.game.mainCharater.position.x + increment),
+                (this.game.mainCharater.initialPositionY),
+                this.game.mainCharater.capeWidth, (this.game.mainCharater.height + this.game.mainCharater.capeHeight));
             this.monsters.push(m);
-            
+
             array.splice(index, index + 1);
         }
     }
+    drawBlocks(blockX) {
+        new Block(this.game, blockX);
+    }
     update() {
-        this.monsters1XPos.forEach((monster1X, index, array) => this.dropMonster(monster1X, index, array, 10));
-        this.monsters2XPos.forEach((monster2X, index, array) => this.dropMonster(monster2X, index, array, -10));
+        this.monsters1XPos.forEach((monster1X, index, array) => this.dropMonster(monster1X, index, array, 1000));
+        this.monsters2XPos.forEach((monster2X, index, array) => this.dropMonster(monster2X, index, array, -1000));
         if (this.monsters.length != 0) this.monsters.forEach(m => m.update());
     }
 }
@@ -325,8 +329,9 @@ class InputHandler {
                             this.game.menuAnimationOn = true;
                             this.game.cobraSong.play();
                         } else {
-                            this.game.level = new Level(this.game, ArthurLevel.m1X, ArthurLevel.m2X, ArthurLevel.m1Left,
-                                ArthurLevel.m1Right, ArthurLevel.m2Left, ArthurLevel.m2Right);
+                            this.game.level = new Level(this.game, ArthurLevel.m1X, ArthurLevel.m2X, ArthurLevel.blocks,
+                                ArthurLevel.m1Left, ArthurLevel.m1Right, ArthurLevel.m2Left,
+                                ArthurLevel.m2Right);
                             this.game.gameObjects.push(this.game.level);
                             this.game.runGame();
                             this.game.cobraSong.pause();
@@ -384,12 +389,12 @@ class Character {
         if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
             this.image = this.imageLeft;
             this.cape = this.capeLeft;
-            if (this.position.x <= 0) {
+            if (this.position.x <= this.game.x - 10) {
                 this.position.x = 0;
             } else {
                 this.speed.x = -50;
-                this.game.x += this.speed.x;
             }
+            this.game.x += this.speed.x;
         }
     }
     walkRight() {
@@ -401,18 +406,19 @@ class Character {
                 this.position.x = this.game.width - this.width - 200;
             } else {
                 this.speed.x = 50;
-                this.game.x += this.speed.x;
             }
         }
+        this.game.x += 50;
     }
     jump() {
         if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
-            if (this.position.y >= this.initialPositionY - 50) {
+            if (this.position.y >= this.game.height / 4 - this.height) {
                 this.speed.y = -25;
             }
         }
     }
     update() {
+        console.log(this.game.x);
         this.position.x += this.speed.x;
         this.position.y += this.speed.y;
         if (this.speed.x > 0) {
@@ -423,28 +429,42 @@ class Character {
             this.lastMove = "noMove";
         }
         this.speed.x = 0;
-        this.speed.y = 0;
-        if (this.position.y <= this.initialPositionY) {
+        
+        let isOnABlock = false;
+        this.game.gameObjects.forEach(obj => {
+            if (obj.className == "Block" && 
+            (this.capePosition.y + this.capeHeight < obj.position.y + (obj.height / 5)) &&
+            ((this.capePosition.y + this.capeHeight) >= obj.position.y) &&
+            (this.position.x >= obj.position.x - 20) &&
+            (this.position.x + this.width - 20 <= obj.position.x + obj.width + 20)) {
+                isOnABlock = true;
+            }
+        }); 
+        if (this.position.y <= this.initialPositionY && !isOnABlock) {
             this.speed.y = 1;
+        } else {
+            this.speed.y = 0;
         }
         if (this.image == this.imageRight) {
-            this.capePosition = { x: this.position.x - (this.capeWidth / 3), y: (this.position.y + (this.height / 1.3)) };
+            this.capePosition = { x: this.position.x - (this.capeWidth / 2.7), y: (this.position.y + (this.height / 1.3)) };
         } else {
-            this.capePosition = { x: this.position.x - (this.width / 6), y: (this.position.y + (this.height / 1.3)) };
+            this.capePosition = { x: this.position.x - (this.width / 15), y: (this.position.y + (this.height / 1.3)) };
         }
     }
 }
 class Block {
-    constructor(game) {
+    constructor(game, posX) {
         this.game = game;
         this.img = document.getElementById("block");
+
+        this.className = "Block";
 
         this.width = 100;
         this.height = 100;
 
-        let positionX = Math.floor(Math.random() * this.game.width - this.width);
-        let positionY = this.game.mainCharater.initialPositionY - this.height - 45;
-        this.position = { x: positionX, y: positionY };
+        let positionX = posX;
+        let positionY = this.game.mainCharater.position.y - this.height;
+        this.position = { x: positionX, y: positionY + 50 };
         this.game.block = this;
         this.game.gameObjects.push(this);
 
