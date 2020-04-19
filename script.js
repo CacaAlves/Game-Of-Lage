@@ -1,7 +1,11 @@
-// const FELIPE_LEVEL = [
-//     [0, "block-1"],
-//     []
-// ];
+const ArthurLevel = {
+    m1X: [200, 400, 600, 800, 1000],
+    m2X: [120, 220, 550, 900],
+    m1Left: document.getElementById("José-left"),
+    m1Right: document.getElementById("José-right"),
+    m2Left: document.getElementById("Felipe-left"),
+    m2Right: document.getElementById("Felipe-right")
+}
 class Game {
     constructor(gameWidth, gameHeight, ctx, GAME_STAGE) {
         this.width = gameWidth;
@@ -141,7 +145,9 @@ class Game {
                     this.mago.draw();
                 } else {
                     this.narutoSadSong.pause();
-                    this.createBlock();
+                    this.level = new Level(this, ArthurLevel.m1X, ArthurLevel.m2X, ArthurLevel.m1Left,
+                        ArthurLevel.m1Right, ArthurLevel.m2Left, ArthurLevel.m2Right);
+                    this.gameObjects.push(this.level);
                     this.runGame();
                 }
             }
@@ -220,7 +226,7 @@ class Game {
                 break;
             case this.GAME_STAGE.PAUSED:
                 this.pause();
-                break;  
+                break;
             default:
                 break;
         }
@@ -249,13 +255,63 @@ class Img {
         );
     }
 }
+class Monster {
+    constructor(game, imgLeft, imgRight, positionX, positionY, width, height) {
+        this.game = game;
+        this.imgLeft = imgLeft;
+        this.imgRight = imgRight;
+        this.img = this.imgRight;
+        this.position = { x: positionX, y: positionY };
+        this.width = width;
+        this.height = height;
+    }
+    draw() {
+        this.game.ctx.drawImage(this.img,
+            (this.position.x),
+            (this.position.y),
+            (this.width),
+            (this.height)
+        );
+    }
+    update() {
+        if (this.position.x > this.game.mainCharater.position.x) {
+            this.position.x -= 10;
+            this.img = this.imgLeft;
+        } else if (this.position.x < this.game.mainCharater.position.x) {
+            this.position.x += 10;
+            this.img = this.imgRight;
+        }
+    }
+}
 class Level {
-    constructor(blocks, monsters1Pos, monsters2Pos, monster1, monster2) {
-        this.blocks = blocks;
-        this.monsters1Pos = monsters1Pos;
-        this.monsters2Pos = monsters2Pos;
-        this.monster1 = monter1;
-        this.monster2 = monster2;
+    constructor(game, monsters1XPos, monsters2XPos, monster1Left, monster1Right, monster2Left, monster2Right) {
+        this.game = game;
+        this.monsters1XPos = monsters1XPos.slice();
+        this.monsters2XPos = monsters2XPos.slice();
+        this.monster1Left = monster1Left;
+        this.monster1Right = monster1Right;
+        this.monster2Left = monster2Left;
+        this.monster2Right = monster2Right;
+
+        this.monsters = [];
+    }
+    draw() {
+        if (this.monsters.length != 0) this.monsters.forEach(m => m.draw());
+    }
+    dropMonster(monsterX, index, array, increment) {
+        if (monsterX == this.game.x) {
+            let m = new Monster(this.game, this.monster1Left, this.monster1Right, (monsterX + increment),
+                (this.game.mainCharater.position.y + ((this.game.mainCharater.height + this.game.mainCharater.capeHeight)) / 2),
+                this.game.mainCharater.width, this.game.mainCharater.height / 2);
+            this.monsters.push(m);
+            
+            array.splice(index, index + 1);
+        }
+    }
+    update() {
+        this.monsters1XPos.forEach((monster1X, index, array) => this.dropMonster(monster1X, index, array, 10));
+        this.monsters2XPos.forEach((monster2X, index, array) => this.dropMonster(monster2X, index, array, -10));
+        if (this.monsters.length != 0) this.monsters.forEach(m => m.update());
     }
 }
 class InputHandler {
@@ -269,7 +325,9 @@ class InputHandler {
                             this.game.menuAnimationOn = true;
                             this.game.cobraSong.play();
                         } else {
-                            this.game.createBlock();
+                            this.game.level = new Level(this.game, ArthurLevel.m1X, ArthurLevel.m2X, ArthurLevel.m1Left,
+                                ArthurLevel.m1Right, ArthurLevel.m2Left, ArthurLevel.m2Right);
+                            this.game.gameObjects.push(this.game.level);
                             this.game.runGame();
                             this.game.cobraSong.pause();
                         }
@@ -398,10 +456,8 @@ class Block {
     update() {
         if (this.game.mainCharater.lastMove == "left") {
             this.position.x += 50;
-            console.log("left");
         } else if (this.game.mainCharater.lastMove == "right") {
             this.position.x -= 50;
-            console.log("right");
         }
     }
 }
