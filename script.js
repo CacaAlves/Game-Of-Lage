@@ -1,3 +1,7 @@
+// const FELIPE_LEVEL = [
+//     [0, "block-1"],
+//     []
+// ];
 class Game {
     constructor(gameWidth, gameHeight, ctx, GAME_STAGE) {
         this.width = gameWidth;
@@ -7,10 +11,9 @@ class Game {
         this.gameStage = this.GAME_STAGE.MENU;
         this.ih = new InputHandler(this);
     }
-    test() {
-        console.log("a");
-    }
     start() {
+        this.x = 0;
+        this.y = 0;
         this.menuAnimationOn = false;
 
         this.mago = new Img(this,
@@ -27,18 +30,22 @@ class Game {
 
         this.cobraSong = document.getElementById("Cobra-Venenosa-audio");
         this.querTomarBombaSong = document.getElementById("Quer-Tomar-Bomba-audio");
+        this.narutoSadSong = document.getElementById("Sorrow-And-Sadness-audio");
+        this.runningSongPlayin = this.querTomarBombaSong;
 
-        this.mainCharater = new Character("Evaldo", 
-                            this, 
-                            document.getElementById("Evaldo-left-img"), 
-                            document.getElementById("Evaldo-right-img"), 
-                            document.getElementById("cape-left"),
-                            document.getElementById("cape-right"));
+        this.mainCharater = new Character("Evaldo",
+            this,
+            document.getElementById("Evaldo-left-img"),
+            document.getElementById("Evaldo-right-img"),
+            document.getElementById("cape-left"),
+            document.getElementById("cape-right"));
+
         this.gameObjects = [this.mainCharater];
     }
     menu() {
         if (this.menuAnimationOn) {
             this.mainCharater.position.y = this.height - this.mainCharater.capeHeight - this.mainCharater.height + (this.mainCharater.height / 3);
+            this.mainCharater.initialPositionY = this.mainCharater.position.y;
             this.mainCharater.draw();
             let bus = document.getElementById("bus-img");
             this.bus = new Img(this,
@@ -55,19 +62,20 @@ class Game {
             this.camaro.position.x += 2;
             if (this.camaro.position.x >= this.width) {
                 this.cobraSong.pause();
+                this.narutoSadSong.play();
                 let text0 = "(Aperte space para pular animação)";
                 let text1 = "Carai, eu sou um merda, mermão... Eu moro num ônibus!!!";
                 let text2 = "Sou muito pobre... Queria tanto ser o dono da Lage!"
                 let text3 = "Quero mudar de vida... Mas não quero entrar pro crime!";
-                let text4 = "Já sei! Vou salvar meninas aleatórias..."
-                let text4_2 =  "e perguntar se elas querem morar no meu harém!";
+                let text4 = "Já sei! Vou salvar várias meninas aleatórias..."
+                let text4_2 = "e perguntar se elas querem morar no meu harém!";
                 let text5 = "E vou tomar bomba ! HAHAHAHAHHAHA";
-                let text6 = "Olá! Sou o Mago C-Abriu!";
+                let text6 = "Olá! Sou C-Abriu?!, o Mago.";
                 let text7 = "Se queres se tornar o dono da Lage";
                 let text8 = "Deves pegar 5 meninas para teu harém";
-                let text9 = "E só assim iniciarás teu reinado!";
-                let text10 = "Deves começar pelo Redondo! :";
-                let text11 = "Com Arthur, o Gado!";
+                let text9 = "E, só assim, iniciarás teu reinado!";
+                let text10 = "Deves começar pelo Redondo :";
+                let text11 = "com Arthur, o Gado!";
                 let font = "30px Arial";
                 let color = "black";
                 let positionX = this.mainCharater.position.x + 400;
@@ -132,6 +140,8 @@ class Game {
                     this.text11Counter++;
                     this.mago.draw();
                 } else {
+                    this.narutoSadSong.pause();
+                    this.createBlock();
                     this.runGame();
                 }
             }
@@ -146,8 +156,8 @@ class Game {
             this.text6Counter = 0;
             this.text7Counter = 0;
             this.text8Counter = 0;
-            this.text9Counter = 0;            
-            this.text10Counter = 0;            
+            this.text9Counter = 0;
+            this.text10Counter = 0;
             this.text11Counter = 0;
             this.ctx.rect(0, 0, this.width, this.height);
             this.ctx.fillStyle = "rgb(0,0,0)";
@@ -161,16 +171,20 @@ class Game {
             this.mainCharater.draw();
         }
     }
+    createBlock() {
+        this.block_1 = new Block(this);
+        this.gameObjects.push(this.block_1);
+    }
     runGame() {
         if (this.gameStage == this.GAME_STAGE.MENU) {
             this.gameStage = this.GAME_STAGE.RUNNING;
-            this.querTomarBombaSong.play();
+            this.runningSongPlayin.play();
         }
     }
-    drawText(text, font, color ,positionX, positionY) {
+    drawText(text, font, color, positionX, positionY) {
         this.ctx.font = font;
         this.ctx.fillStyle = color;
-        this.ctx.fillText(text,positionX, positionY);
+        this.ctx.fillText(text, positionX, positionY);
     }
     draw() {
         switch (this.gameStage) {
@@ -186,6 +200,7 @@ class Game {
     }
     update() {
         this.gameObjects.forEach(object => object.update());
+        if (this.runningSongPlayin.ended) this.runningSongPlayin.play();
     }
 }
 class Img {
@@ -212,10 +227,11 @@ class InputHandler {
             switch (event.keyCode) {
                 case 32:
                     if (this.game.gameStage == this.game.GAME_STAGE.MENU) {
-                        if(this.game.menuAnimationOn != true) {
+                        if (this.game.menuAnimationOn != true) {
                             this.game.menuAnimationOn = true;
                             this.game.cobraSong.play();
                         } else {
+                            this.game.createBlock();
                             this.game.runGame();
                             this.game.cobraSong.pause();
                         }
@@ -231,7 +247,7 @@ class InputHandler {
                     break;
                 case 38:
                 case 87:
-                    this.game.mainCharater.jump();
+                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) this.game.mainCharater.jump();
                     break;
                 default:
                     break;
@@ -267,9 +283,10 @@ class Character {
     walkLeft() {
         this.image = this.imageLeft;
         this.cape = this.capeLeft;
-        this.speed.x = -200;
         if (this.position.x < 0) {
             this.position.x = 0;
+        } else {
+            this.speed.x = -100;
         }
     }
     walkRight() {
@@ -277,22 +294,29 @@ class Character {
         this.cape = this.capeRight;
         if (this.position.x + this.width > this.game.width) {
             this.position.x = this.game.width - this.width;
-        }
-        else {
-            this.speed.x = 200;
+        } else {
+            this.speed.x = 100;
         }
     }
     jump() {
-        if (this.position.y < 10) {
-            this.speed.y = 5;
+        if (this.position.y >= this.initialPositionY - 50) {
+            this.speed.y = -25;
         }
     }
     update() {
         this.position.x += this.speed.x;
         this.position.y += this.speed.y;
+        if (this.speed.x > 0) {
+            this.lastMove = "right";
+        } else if (this.speed.x < 0) {
+            this.lastMove = "left";
+        } else {
+            this.lastMove = "noMove";
+        }
         this.speed.x = 0;
-        if (this.speed.y != 0) {
-            this.speed.y--;
+        this.speed.y = 0;
+        if (this.position.y <= this.initialPositionY) {
+            this.speed.y = 1;
         }
         if (this.image == this.imageRight) {
             this.capePosition = { x: this.position.x - (this.capeWidth / 3), y: (this.position.y + (this.height / 1.3)) };
@@ -301,14 +325,42 @@ class Character {
         }
     }
 }
+class Block {
+    constructor(game) {
+        this.game = game;
+        this.img = document.getElementById("block");
+        
+        this.width = 100;
+        this.height = 100;
 
+        let positionX = Math.floor(Math.random() * this.game.width - this.width);
+        let positionY = this.game.mainCharater.initialPositionY - this.height - 45;
+        this.position = { x: positionX, y: positionY };
+        this.game.block = this;
+        this.game.gameObjects.push(this);
+        
+
+    }
+    draw() {
+        this.game.ctx.drawImage(this.img, this.position.x, this.position.y, this.width, this.height);
+    }
+    update() {
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += 50;
+            console.log("left");
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= 50;
+            console.log("right");
+        }
+    }
+}
 let canvas = document.getElementById("canvas");
 
 let stylew = window.getComputedStyle(canvas).width;
-let value = parseInt(stylew.substr(0,stylew.search("px")));
+let value = parseInt(stylew.substr(0, stylew.search("px")));
 canvas.width = value;
 let styleh = window.getComputedStyle(canvas).height;
-value = parseInt(styleh.substr(0,styleh.search("px")));
+value = parseInt(styleh.substr(0, styleh.search("px")));
 canvas.height = value;
 
 const SCREEN_WIDTH = canvas.clientWidth;
