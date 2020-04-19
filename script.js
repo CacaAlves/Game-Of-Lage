@@ -31,7 +31,7 @@ class Game {
         this.cobraSong = document.getElementById("Cobra-Venenosa-audio");
         this.querTomarBombaSong = document.getElementById("Quer-Tomar-Bomba-audio");
         this.narutoSadSong = document.getElementById("Sorrow-And-Sadness-audio");
-        this.runningSongPlayin = this.querTomarBombaSong;
+        this.runningSongPlaying = this.querTomarBombaSong;
 
         this.mainCharater = new Character("Evaldo",
             this,
@@ -172,14 +172,38 @@ class Game {
         }
     }
     createBlock() {
-        this.block_1 = new Block(this);
-        this.gameObjects.push(this.block_1);
+        this.block = new Block(this);
+        this.gameObjects.push(this.block);
     }
     runGame() {
-        if (this.gameStage == this.GAME_STAGE.MENU) {
+        if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.PAUSED) {
             this.gameStage = this.GAME_STAGE.RUNNING;
-            this.runningSongPlayin.play();
+            this.runningSongPlaying.play();
         }
+    }
+    togglePause() {
+        if (this.gameStage == this.GAME_STAGE.RUNNING) {
+            this.gameStage = this.GAME_STAGE.PAUSED;
+        } else if (this.gameStage == this.GAME_STAGE.PAUSED) {
+            this.runGame();
+        }
+
+    }
+    pause() {
+        this.runningSongPlaying.pause();
+
+        this.ctx.rect(0, 0, this.width, this.height);
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        this.ctx.fill();
+
+        this.ctx.font = "50px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("Paused", this.width / 2, this.height / 2);
+
+        this.mainCharater.draw();
+        this.block.draw();
+
     }
     drawText(text, font, color, positionX, positionY) {
         this.ctx.font = font;
@@ -194,13 +218,18 @@ class Game {
             case this.GAME_STAGE.RUNNING:
                 this.gameObjects.forEach(obj => obj.draw());
                 break;
+            case this.GAME_STAGE.PAUSED:
+                this.pause();
+                break;  
             default:
                 break;
         }
     }
     update() {
-        this.gameObjects.forEach(object => object.update());
-        if (this.runningSongPlayin.ended) this.runningSongPlayin.play();
+        if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.RUNNING) {
+            this.gameObjects.forEach(object => object.update());
+            if (this.runningSongPlaying.ended) this.runningSongPlaying.play();
+        }
     }
 }
 class Img {
@@ -218,6 +247,15 @@ class Img {
             (this.width),
             (this.height)
         );
+    }
+}
+class Level {
+    constructor(blocks, monsters1Pos, monsters2Pos, monster1, monster2) {
+        this.blocks = blocks;
+        this.monsters1Pos = monsters1Pos;
+        this.monsters2Pos = monsters2Pos;
+        this.monster1 = monter1;
+        this.monster2 = monster2;
     }
 }
 class InputHandler {
@@ -239,15 +277,19 @@ class InputHandler {
                     break;
                 case 37:
                 case 65:
-                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) this.game.mainCharater.walkLeft();
+                    this.game.mainCharater.walkLeft();
                     break;
                 case 39:
                 case 68:
-                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) this.game.mainCharater.walkRight();
+                    this.game.mainCharater.walkRight();
                     break;
                 case 38:
                 case 87:
-                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) this.game.mainCharater.jump();
+                    this.game.mainCharater.jump();
+                    break;
+                case 80:
+                case 27:
+                    this.game.togglePause();
                     break;
                 default:
                     break;
@@ -269,8 +311,8 @@ class Character {
 
         this.position = { x: 100, y: 50 };
         this.speed = { x: 0, y: 0 };
-        this.width = 110;
-        this.height = 110;
+        this.width = 100;
+        this.height = 100;
         this.capeWidth = this.width + 70;
         this.capeHeight = this.height + 70;
         this.capePosition = { x: this.position.x - (this.capeWidth / 3), y: (this.position.y + (this.height / 1.3)) };
@@ -281,26 +323,35 @@ class Character {
         this.game.ctx.drawImage(this.cape, this.capePosition.x, this.capePosition.y, this.capeWidth, this.capeHeight);
     }
     walkLeft() {
-        this.image = this.imageLeft;
-        this.cape = this.capeLeft;
-        if (this.position.x < 0) {
-            this.position.x = 0;
-        } else {
-            this.speed.x = -100;
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
+            this.image = this.imageLeft;
+            this.cape = this.capeLeft;
+            if (this.position.x <= 0) {
+                this.position.x = 0;
+            } else {
+                this.speed.x = -50;
+                this.game.x += this.speed.x;
+            }
         }
     }
     walkRight() {
-        this.image = this.imageRight;
-        this.cape = this.capeRight;
-        if (this.position.x + this.width > this.game.width) {
-            this.position.x = this.game.width - this.width;
-        } else {
-            this.speed.x = 100;
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
+
+            this.image = this.imageRight;
+            this.cape = this.capeRight;
+            if (this.position.x + this.width >= this.game.width - 200) {
+                this.position.x = this.game.width - this.width - 200;
+            } else {
+                this.speed.x = 50;
+                this.game.x += this.speed.x;
+            }
         }
     }
     jump() {
-        if (this.position.y >= this.initialPositionY - 50) {
-            this.speed.y = -25;
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
+            if (this.position.y >= this.initialPositionY - 50) {
+                this.speed.y = -25;
+            }
         }
     }
     update() {
@@ -329,7 +380,7 @@ class Block {
     constructor(game) {
         this.game = game;
         this.img = document.getElementById("block");
-        
+
         this.width = 100;
         this.height = 100;
 
@@ -338,7 +389,7 @@ class Block {
         this.position = { x: positionX, y: positionY };
         this.game.block = this;
         this.game.gameObjects.push(this);
-        
+
 
     }
     draw() {
