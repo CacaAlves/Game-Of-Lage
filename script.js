@@ -1,7 +1,8 @@
 const ArthurLevel = {
     m1X: [200, 700, 1600, 1800, 3000],
     m2X: [120, 220, 550, 900],
-    blocks: [200, 300, 400, 500, 900, 1500, 5000, 5100, 5200, 5300],
+    blocks: [200, 300, 400, 500, 900, 1500, 5000, 5100, 5200, 5300,
+        6000, 6100, 6300, 7000, 7100, 7200, 7400, 7500, 8900],
     m1Left: document.getElementById("Loli-left"),
     m1Right: document.getElementById("Loli-right"),
     m2Left: document.getElementById("Felipe-left"),
@@ -17,6 +18,7 @@ class Game {
         this.ih = new InputHandler(this);
     }
     start() {
+        game.x
         this.x = 0;
         this.y = 0;
         this.menuAnimationOn = false;
@@ -260,8 +262,10 @@ class Monster {
         this.imgRight = imgRight;
         this.img = this.imgRight;
         this.position = { x: positionX, y: positionY };
+        this.initialPositionY = this.position.y;
         this.width = width;
         this.height = height;
+        this.lastMove = ["left", 0];
     }
     draw() {
         this.game.ctx.drawImage(this.img,
@@ -272,12 +276,28 @@ class Monster {
         );
     }
     update() {
-        if (this.position.x > this.game.mainCharater.position.x) {
-            this.position.x -= Math.floor(Math.random() * 5);
-            this.img = this.imgLeft;
-        } else if (this.position.x < this.game.mainCharater.position.x) {
+        if (this.position.x < this.game.mainCharater.position.x - 500) {
             this.position.x += Math.floor(Math.random() * 5);
             this.img = this.imgRight;
+        } else {
+            if (this.lastMove[1] == 300) {
+                this.lastMove[1] = 0;
+                if (this.lastMove[0] == "left") {
+                    this.lastMove[0] = "right";
+                } else {
+                    this.lastMove[0] = "left";
+                }
+            }
+            else if (this.lastMove[0] == "left" && this.lastMove[1] < 300) {
+                this.position.x += 5;
+                this.lastMove[1]++;
+            } else if (this.lastMove[0] == "right" && this.lastMove[1] < 300) {
+                this.position.x -= 15;
+                this.lastMove[1]++;
+            }
+        }
+        if (this.game.mainCharater.lastMove != "noMove") {
+            this.position.x += this.game.mainCharater.speed.x;
         }
     }
 }
@@ -371,7 +391,7 @@ class Character {
 
         this.image = this.imageRight;
         this.cape = this.capeRight;
-
+        this.lastMove = "noMove";
         this.position = { x: 100, y: 50 };
         this.speed = { x: 0, y: 0 };
         this.width = 100;
@@ -389,12 +409,15 @@ class Character {
         if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
             this.image = this.imageLeft;
             this.cape = this.capeLeft;
-            if (this.position.x <= this.game.x - 10) {
-                this.position.x = 0;
+            if (this.game.x <= 50) {
+                this.game.x = 50;
+                this.speed.x = 0;
+                this.lastMove = "noMove";
             } else {
                 this.speed.x = -50;
+                this.game.x += this.speed.x;
+                this.lastMove = "left";
             }
-            this.game.x += this.speed.x;
         }
     }
     walkRight() {
@@ -404,11 +427,14 @@ class Character {
             this.cape = this.capeRight;
             if (this.position.x + this.width >= this.game.width - 200) {
                 this.position.x = this.game.width - this.width - 200;
-            } else {
+            } else if (this.game.x <= 9000) {
                 this.speed.x = 50;
             }
         }
-        this.game.x += 50;
+        if (this.game.x <= 8000) {
+            this.game.x += 50;
+            this.lastMove = "right";
+        }
     }
     jump() {
         if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
@@ -419,27 +445,23 @@ class Character {
     }
     update() {
         console.log(this.game.x);
-        this.position.x += this.speed.x;
+        // this.position.x += this.speed.x;
         this.position.y += this.speed.y;
-        if (this.speed.x > 0) {
-            this.lastMove = "right";
-        } else if (this.speed.x < 0) {
-            this.lastMove = "left";
-        } else {
+        if (this.speed.x == 0) {
             this.lastMove = "noMove";
         }
         this.speed.x = 0;
-        
+
         let isOnABlock = false;
         this.game.gameObjects.forEach(obj => {
-            if (obj.className == "Block" && 
-            (this.capePosition.y + this.capeHeight < obj.position.y + (obj.height / 5)) &&
-            ((this.capePosition.y + this.capeHeight) >= obj.position.y) &&
-            (this.position.x >= obj.position.x - 20) &&
-            (this.position.x + this.width - 20 <= obj.position.x + obj.width + 20)) {
+            if (obj.className == "Block" &&
+                (this.capePosition.y + this.capeHeight < obj.position.y + (obj.height / 5)) &&
+                ((this.capePosition.y + this.capeHeight) >= obj.position.y) &&
+                (this.position.x >= obj.position.x - 20) &&
+                (this.position.x + (this.width / 2) <= obj.position.x + obj.width + 20)) {
                 isOnABlock = true;
             }
-        }); 
+        });
         if (this.position.y <= this.initialPositionY && !isOnABlock) {
             this.speed.y = 1;
         } else {
@@ -465,7 +487,6 @@ class Block {
         let positionX = posX;
         let positionY = this.game.mainCharater.position.y - this.height;
         this.position = { x: positionX, y: positionY + 50 };
-        this.game.block = this;
         this.game.gameObjects.push(this);
 
 
