@@ -1,12 +1,12 @@
 const ArthurLevel = {
-    m1X: [200, 700, 1600, 1800, 3000],
-    m2X: [120, 220, 550, 900],
+    m1X: [200, 1800, 3000],
+    m2X: [400, 600, 7000],
     blocks: [200, 300, 400, 500, 900, 1500, 5000, 5100, 5200, 5300,
         6000, 6100, 6300, 7000, 7100, 7200, 7400, 7500, 8900],
     m1Left: document.getElementById("Loli-left"),
     m1Right: document.getElementById("Loli-right"),
-    m2Left: document.getElementById("Felipe-left"),
-    m2Right: document.getElementById("Felipe-right")
+    m2Left: document.getElementById("Loli-left"),
+    m2Right: document.getElementById("Loli-right")
 }
 class Game {
     constructor(gameWidth, gameHeight, ctx, GAME_STAGE) {
@@ -22,6 +22,7 @@ class Game {
         this.x = 0;
         this.y = 0;
         this.menuAnimationOn = false;
+        this.initionAnimationBeforeMago = true;
 
         this.mago = new Img(this,
             document.getElementById("Rei-left"),
@@ -211,6 +212,20 @@ class Game {
         this.gameObjects.forEach(obj => obj.draw());
 
     }
+    gameOver() {
+        this.runningSongPlaying.pause();
+
+        this.ctx.rect(0, 0, this.width, this.height);
+        this.ctx.fillStyle = "rgb(0, 0, 0)";
+        this.ctx.fill();
+
+        this.ctx.font = "50px Arial";
+        this.ctx.fillStyle = "white";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("Conversa é entre gente, macaco fica na corrente!", this.width / 2, this.height / 2);
+        this.ctx.font = "30px Arial";
+        this.ctx.fillText("(aperte space para reiniciar)", this.width / 2, this.height / 2 + 100);
+    }
     drawText(text, font, color, positionX, positionY) {
         this.ctx.font = font;
         this.ctx.fillStyle = color;
@@ -226,6 +241,9 @@ class Game {
                 break;
             case this.GAME_STAGE.PAUSED:
                 this.pause();
+                break;
+            case this.GAME_STAGE.GAMEOVER:
+                this.gameOver();
                 break;
             default:
                 break;
@@ -275,12 +293,24 @@ class Monster {
             (this.height)
         );
     }
+    detectedColision() {
+        if (leftColision(this.game.mainCharater, this) || rightColision(this.game.mainCharater, this)) {
+            this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
+        }
+    }
     update() {
-        if (this.position.x < this.game.mainCharater.position.x - 500) {
-            this.position.x += Math.floor(Math.random() * 5);
-            this.img = this.imgRight;
+        if (this.position.x >= this.game.mainCharater.position.x + 200) {
+            this.position.x -= 5;
+            this.lastMove[1] = 50;
+            this.lastMove[0] = "left";
+            if (this.img != this.imgRight) this.img = this.imgRight;
+        } else if (this.position.x <= this.game.mainCharater.position.x - 200) {
+            this.position.x += 5;
+            this.lastMove[1] = 50;
+            this.lastMove[0] = "right";
+            if (this.img != this.imgLeft) this.img = this.imgLeft;
         } else {
-            if (this.lastMove[1] == 300) {
+            if (this.lastMove[1] == 50) {
                 this.lastMove[1] = 0;
                 if (this.lastMove[0] == "left") {
                     this.lastMove[0] = "right";
@@ -288,16 +318,15 @@ class Monster {
                     this.lastMove[0] = "left";
                 }
             }
-            else if (this.lastMove[0] == "left" && this.lastMove[1] < 300) {
-                this.position.x += 5;
+            else if (this.lastMove[0] == "left" && this.lastMove[1] < 50) {
+                this.position.x += 2;
+                if (this.img != this.imgRight) this.img = this.imgRight;
                 this.lastMove[1]++;
-            } else if (this.lastMove[0] == "right" && this.lastMove[1] < 300) {
-                this.position.x -= 15;
+            } else if (this.lastMove[0] == "right" && this.lastMove[1] < 50) {
+                this.position.x -= 2;
+                if (this.img != this.imgLeft) this.img = this.imgLeft;
                 this.lastMove[1]++;
             }
-        }
-        if (this.game.mainCharater.lastMove != "noMove") {
-            this.position.x += this.game.mainCharater.speed.x;
         }
     }
 }
@@ -319,9 +348,9 @@ class Level {
     draw() {
         if (this.monsters.length != 0) this.monsters.forEach(m => m.draw());
     }
-    dropMonster(monsterX, index, array, increment) {
+    dropMonster(monsterX, imgLeft, imgRight, index, array, increment) {
         if (monsterX == this.game.x) {
-            let m = new Monster(this.game, this.monster1Left, this.monster1Right, (this.game.mainCharater.position.x + increment),
+            let m = new Monster(this.game, imgLeft, imgRight, (this.game.mainCharater.position.x + increment),
                 (this.game.mainCharater.initialPositionY),
                 this.game.mainCharater.capeWidth, (this.game.mainCharater.height + this.game.mainCharater.capeHeight));
             this.monsters.push(m);
@@ -333,9 +362,11 @@ class Level {
         new Block(this.game, blockX);
     }
     update() {
-        this.monsters1XPos.forEach((monster1X, index, array) => this.dropMonster(monster1X, index, array, 1000));
-        this.monsters2XPos.forEach((monster2X, index, array) => this.dropMonster(monster2X, index, array, -1000));
+        let increment = 500;
+        this.monsters1XPos.forEach((monster1X, index, array) => this.dropMonster(monster1X, this.monster1Left, this.monster1Right,index, array, increment));
+        this.monsters2XPos.forEach((monster2X, index, array) => this.dropMonster(monster2X, this.monster2Left, this.monster2Right, index, array, -increment));
         if (this.monsters.length != 0) this.monsters.forEach(m => m.update());
+        if (this.monsters.length != 0) this.monsters.forEach(m => m.detectedColision());
     }
 }
 class InputHandler {
@@ -356,6 +387,9 @@ class InputHandler {
                             this.game.runGame();
                             this.game.cobraSong.pause();
                         }
+                    } else if (this.game.gameStage == this.game.GAME_STAGE.GAMEOVER){
+                        this.game.start();
+                        this.game.gameStage = this.game.GAME_STAGE.MENU;
                     }
                     break;
                 case 37:
@@ -405,8 +439,20 @@ class Character {
         this.game.ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
         this.game.ctx.drawImage(this.cape, this.capePosition.x, this.capePosition.y, this.capeWidth, this.capeHeight);
     }
+    blockHorizontalColision() {
+        let colision = false;
+        this.game.gameObjects.
+                filter(b => b.className == "Block")
+                .forEach(b => {
+                    if(rightColision(this, b) || leftColision(this, b) ||
+                       headRightColision(this, b) || headLeftColision(this, b)) {
+                        colision = true;
+                    }
+                });
+        return colision;
+    }
     walkLeft() {
-        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING  && !this.blockHorizontalColision()) {
             this.image = this.imageLeft;
             this.cape = this.capeLeft;
             if (this.game.x <= 50) {
@@ -421,19 +467,19 @@ class Character {
         }
     }
     walkRight() {
-        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING) {
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING && !this.blockHorizontalColision()) {
 
             this.image = this.imageRight;
             this.cape = this.capeRight;
             if (this.position.x + this.width >= this.game.width - 200) {
                 this.position.x = this.game.width - this.width - 200;
-            } else if (this.game.x <= 9000) {
+            } else if (this.game.x <= 9000 + this.width) {
                 this.speed.x = 50;
             }
-        }
-        if (this.game.x <= 8000) {
-            this.game.x += 50;
-            this.lastMove = "right";
+            if (this.game.x <= 9000 + this.width) {
+                this.game.x += 50;
+                this.lastMove = "right";
+            }
         }
     }
     jump() {
@@ -485,7 +531,7 @@ class Block {
         this.height = 100;
 
         let positionX = posX;
-        let positionY = this.game.mainCharater.position.y - this.height;
+        let positionY = this.game.mainCharater.position.y - this.height - 50;
         this.position = { x: positionX, y: positionY + 50 };
         this.game.gameObjects.push(this);
 
@@ -501,6 +547,49 @@ class Block {
             this.position.x -= 50;
         }
     }
+}
+function rightColision(character, obj) {
+    let cRight = character.capePosition.x + character.capeWidth;
+    let cMiddleY = (character.position.y + character.height + character.capePosition.y + character.capeHeight) / 1.8;
+    let objLeft = obj.position.x;
+    let objRight = obj.position.x + obj.width;
+    let objTop = obj.position.y;
+    let objBottom = obj.position.y + obj.height;
+    return (cRight >= objLeft && cRight < objRight &&
+        cMiddleY <= objBottom && cMiddleY >= objTop);
+}
+function headRightColision(character, obj) {
+    let cRight = character.position.x + character.width;
+    let cMiddleY = (character.position.y + (character.height / 3.5));
+    let objLeft = obj.position.x;
+    let objRight = obj.position.x + obj.width;
+    let objTop = obj.position.y;
+    let objBottom = obj.position.y + obj.height;
+    return (cRight >= objLeft && cRight < objRight &&
+        cMiddleY <= objBottom && cMiddleY >= objTop);
+}
+function leftColision(character, obj) {
+    let cLeft = character.capePosition.x;
+    let cMiddleY = (character.position.y + character.height + character.capePosition.y + character.capeHeight) / 1.8;
+    let objLeft = obj.position.x;
+    let objRight = obj.position.x + obj.width;
+    let objTop = obj.position.y;
+    let objBottom = obj.position.y + obj.height;
+    return (cLeft > objLeft && cLeft <= objRight &&
+        cMiddleY <= objBottom && cMiddleY >= objTop);
+}
+function headLeftColision(character, obj) {
+    let cLeft = character.position.x;
+    let cMiddleY = (character.position.y + (character.height / 3.5));
+    let objLeft = obj.position.x;
+    let objRight = obj.position.x + obj.width;
+    let objTop = obj.position.y;
+    let objBottom = obj.position.y + obj.height;
+    return (cLeft > objLeft && cLeft <= objRight &&
+        cMiddleY <= objBottom && cMiddleY >= objTop);
+}
+function bottomColision() {
+
 }
 let canvas = document.getElementById("canvas");
 
