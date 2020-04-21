@@ -1,8 +1,9 @@
 let ArthurLevel = {
     soundtrack: document.getElementById("Bois-Dont-Cry-audio"),
-    m1X: [200, 1800, 3000],
-    m2X: [400, 600, 7000],
-    blocks: [200, 300, 400, 500, 900, 1500, 5000, 5100, 5200, 5300,
+    m1X: [200, 2000, 4000, 6000],
+    m2X: [300, 600, 700, 5000, 8800],
+    blocks: [200, 300, 400, 500, 900, 1500, 2000, 2100, 2200, 2500, 3400, 3500,
+        3600, 3700, 4000, 4500, 4600, 5000, 5100, 5200, 5300,
         6000, 6100, 6300, 7000, 7100, 7200, 7400, 7500, 8900],
     m1Left: document.getElementById("Arthur-left"),
     m1Right: document.getElementById("Arthur-right"),
@@ -59,8 +60,13 @@ class Game {
         ArthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
         ArthurLevel.measures.push(3100);//fountain x
         ArthurLevel.measures.push(this.height / 2)///fountain y
+        ArthurLevel.measures.push(8000);//fountain x2
+        ArthurLevel.measures.push(this.height / 2)///fountain y2
         ArthurLevel.measures.push(this.mainCharater.width);//fountain w
         ArthurLevel.measures.push(this.height / 2);//fountain h
+
+        this.lifeBar = new LifeBar(this);
+        this.gameObjects.push(this.lifeBar);
 
     }
 
@@ -267,6 +273,28 @@ class Game {
         }
     }
 }
+class LifeBar {
+    constructor(game) {
+        this.game = game;
+        this.points = 10;
+        this.maxPoints = 100;
+        this.position = { x: this.game.width - 310, y: 10 };
+        this.width = 300;
+        this.height = 30;
+    }
+    draw() {
+        this.game.ctx.rect(this.position.x, this.position.y, this.width, this.height);
+        this.game.ctx.stroke();
+        this.game.ctx.fillStyle = "green";
+        this.game.ctx.fillRect(this.position.x + 1, this.position.y + 1,
+            this.width * (this.points / 100) - 2, this.height - 2);
+
+    }
+    update() {
+        if (this.points > this.maxPoints) this.points = this.maxPoints;
+        if (this.points <= 0) this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
+    }
+}
 class Img {
     constructor(game, img, positionX, positionY, width, height) {
         this.game = game;
@@ -276,6 +304,7 @@ class Img {
         this.height = height;
     }
     draw() {
+        if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
         this.game.ctx.drawImage(this.img,
             (this.position.x),
             (this.position.y),
@@ -296,15 +325,17 @@ class Fountain extends Img {
         this.waterHeight = this.game.height / 2;
     }
     draw() {
-        this.game.ctx.drawImage(this.img,
-            (this.position.x),
-            (this.position.y),
-            (this.width),
-            (this.height)
-        );
-        if (this.water) {
-            this.game.ctx.fillStyle = "rgb(186, 226, 241)";
-            this.game.ctx.fillRect(this.waterPosition.x, this.waterPosition.y, this.waterWidth, this.waterHeight);
+        if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width) {
+            this.game.ctx.drawImage(this.img,
+                (this.position.x),
+                (this.position.y),
+                (this.width),
+                (this.height)
+            );
+            if (this.water) {
+                this.game.ctx.fillStyle = "rgb(186, 226, 241)";
+                this.game.ctx.fillRect(this.waterPosition.x, this.waterPosition.y, this.waterWidth, this.waterHeight);
+            }
         }
     }
     update() {
@@ -341,20 +372,23 @@ class Monster {
         this.lastMove = ["left", 0];
     }
     draw() {
-        this.game.ctx.drawImage(this.img,
-            (this.position.x),
-            (this.position.y),
-            (this.width),
-            (this.height)
-        );
+        if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
+            this.game.ctx.drawImage(this.img,
+                (this.position.x),
+                (this.position.y),
+                (this.width),
+                (this.height)
+            );
     }
     detectedColision(level) {
         if (leftColision(this.game.mainCharater, this) || rightColision(this.game.mainCharater, this)) {
             this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
         } else if (bottomColision(this.game.mainCharater, this)) {
             level.monsters.splice(level.monsters.indexOf(this), 1);
+            this.game.lifeBar.points += 10;
         }
     }
+
     update() {
         if (this.position.x + this.width >= this.game.mainCharater.position.x + 200) {
             this.position.x -= 1;
@@ -384,6 +418,11 @@ class Monster {
                 if (this.img != this.imgLeft) this.img = this.imgLeft;
                 this.lastMove[1]++;
             }
+        }
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += 5;
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= 25;
         }
     }
 }
@@ -428,7 +467,8 @@ class Level {
     }
     createAside() {
         if (this.aside == document.getElementById("fountain")) {
-            this.objs.push(new Fountain(this.game, this.aside, this.measures[4], this.measures[5], this.measures[6], this.measures[7]));
+            this.objs.push(new Fountain(this.game, this.aside, this.measures[4], this.measures[5], this.measures[8], this.measures[9]));
+            this.objs.push(new Fountain(this.game, this.aside, this.measures[6], this.measures[7], this.measures[8], this.measures[9]));
         }
     }
     createBlocks(blockX) {
@@ -516,9 +556,9 @@ class Character {
         this.game.ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
         this.game.ctx.drawImage(this.cape, this.capePosition.x, this.capePosition.y, this.capeWidth, this.capeHeight);
     }
-    blockHorizontalColision() {
+    horizontalColision() {
         let colision = false;
-        this.game.gameObjects.
+        this.game.level.blocks.
             filter(b => b.className == "Block")
             .forEach(b => {
                 if (rightColision(this, b) || leftColision(this, b) ||
@@ -526,10 +566,17 @@ class Character {
                     colision = true;
                 }
             });
+        this.game.level.objs.
+            forEach(fountain => {
+                if (rightColision(this, fountain) || leftColision(this, fountain) ||
+                    headRightColision(this, fountain) || headLeftColision(this, fountain)) {
+                    colision = true;
+                }
+            });
         return colision;
     }
     walkLeft() {
-        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING && !this.blockHorizontalColision()) {
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING && !this.horizontalColision()) {
             this.image = this.imageLeft;
             this.cape = this.capeLeft;
             if (this.game.x <= 50) {
@@ -544,7 +591,7 @@ class Character {
         }
     }
     walkRight() {
-        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING && !this.blockHorizontalColision()) {
+        if (this.game.gameStage == this.game.GAME_STAGE.RUNNING && !this.horizontalColision()) {
 
             this.image = this.imageRight;
             this.cape = this.capeRight;
@@ -610,12 +657,11 @@ class Block {
         this.width = 100;
         this.height = 100;
 
-        let positionX = posX;
-        let positionY = posY;
-        this.position = { x: positionX, y: positionY };
+        this.position = { x: posX, y: posY };
     }
     draw() {
-        this.game.ctx.drawImage(this.img, this.position.x, this.position.y, this.width, this.height);
+        if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
+            this.game.ctx.drawImage(this.img, this.position.x, this.position.y, this.width, this.height);
     }
     update() {
         if (this.game.mainCharater.lastMove == "left") {
@@ -671,7 +717,7 @@ function bottomColision(character, obj) {
     let cRight = character.capePosition.x + character.capeWidth;
 
     let objTop = obj.position.y;
-    let objMiddleY = obj.position.y + (obj.height / 2);
+    let objMiddleY = obj.position.y + (obj.height / 2.5);
     let objMiddleX = obj.position.x + (obj.width / 2);
 
     return (cBottom >= objTop && cBottom < objMiddleY &&
