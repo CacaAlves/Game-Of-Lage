@@ -1,4 +1,4 @@
-let ArthurLevel = {
+let arthurLevel = {
     soundtrack: document.getElementById("Bois-Dont-Cry-audio"),
     m1X: [200, 2000, 4000, 6000],
     m2X: [300, 600, 700, 5000, 8800],
@@ -10,8 +10,20 @@ let ArthurLevel = {
     m2Left: document.getElementById("Gado-left"),
     m2Right: document.getElementById("Gado-right"),
     aside: document.getElementById("fountain"),
-    measures: []
+    measures: [],
+    boss: {
+        imgLeft: document.getElementById(""),
+        imgRight: document.getElementById(""),
+        width: 0,
+        height: 0,
+        posX: 0,
+        posY: 0
+    }
 }
+
+let danieLevel = {};
+let joseLevel = {};
+let maykonLevel = {};
 class Game {
     constructor(gameWidth, gameHeight, ctx, GAME_STAGE) {
         this.width = gameWidth;
@@ -30,9 +42,9 @@ class Game {
         this.mago = new Img(this,
             document.getElementById("Rei-left"),
             this.width / 2,
-            this.height - 300 - 10,
+            this.height - 400,
             250,
-            300);
+            400);
 
         this.camaro = new Img(this,
             document.getElementById("camaro-img"),
@@ -54,16 +66,16 @@ class Game {
             document.getElementById("cape-right-rotate"));
 
         this.gameObjects = [this.mainCharater];
-        ArthurLevel.measures.push(this.mainCharater.capeWidth + 50);//m1 2
-        ArthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
-        ArthurLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
-        ArthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
-        ArthurLevel.measures.push(3100);//fountain x
-        ArthurLevel.measures.push(this.height / 2)///fountain y
-        ArthurLevel.measures.push(8000);//fountain x2
-        ArthurLevel.measures.push(this.height / 2)///fountain y2
-        ArthurLevel.measures.push(this.mainCharater.width);//fountain w
-        ArthurLevel.measures.push(this.height / 2);//fountain h
+        arthurLevel.measures.push(this.mainCharater.capeWidth + 50);//m1 2
+        arthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
+        arthurLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
+        arthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
+        arthurLevel.measures.push(3100);//fountain x
+        arthurLevel.measures.push(this.height / 2)///fountain y
+        arthurLevel.measures.push(8000);//fountain x2
+        arthurLevel.measures.push(this.height / 2)///fountain y2
+        arthurLevel.measures.push(this.mainCharater.width);//fountain w
+        arthurLevel.measures.push(this.height / 2);//fountain h
 
         this.lifeBar = new LifeBar(this);
         this.gameObjects.push(this.lifeBar);
@@ -169,7 +181,7 @@ class Game {
                     this.mago.draw();
                 } else {
                     this.narutoSadSong.pause();
-                    this.level = new Level(this, ArthurLevel);
+                    this.level = new Level(this, arthurLevel);
                     this.gameObjects.push(this.level);
                     this.runGame();
                 }
@@ -201,7 +213,8 @@ class Game {
         }
     }
     runGame() {
-        if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.PAUSED) {
+        if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.PAUSED ||
+            this.gameStage == this.GAME_STAGE.ARTHURLEVELFINALANIMATION) {
             this.gameStage = this.GAME_STAGE.RUNNING;
             this.runningSongPlaying.play();
         }
@@ -224,7 +237,7 @@ class Game {
         this.ctx.font = "50px Arial";
         this.ctx.fillStyle = "black";
         this.ctx.textAlign = "center";
-        this.ctx.fillText("Paused", this.width / 2, this.height / 2);
+        this.ctx.fillText("Paused", this.width / 2, this.height / 2 - 100);
 
         this.gameObjects.forEach(obj => obj.draw());
 
@@ -239,7 +252,15 @@ class Game {
         this.ctx.font = "50px Arial";
         this.ctx.fillStyle = "white";
         this.ctx.textAlign = "center";
-        this.ctx.fillText("Conversa é entre gente, macaco fica na corrente!", this.width / 2, this.height / 2);
+        if (this.level.level == arthurLevel) {
+            this.ctx.fillText("Conversa é entre gente, cachorro fica na corrente!", this.width / 2, this.height / 2);
+        } else if (this.level.level == danieLevel) {
+            this.ctx.fillText("Conversa é entre dois, macaco fica pra depois!", this.width / 2, this.height / 2);
+        } else if (this.level.level == joseLevel) {
+            this.ctx.fillText("Evaldo NÃO é bolo doido.", this.width / 2, this.height / 2);
+        } else {
+            this.ctx.fillText("Não estou vendo nenhum bolo, no momento!", this.width / 2, this.height / 2);
+        }
         this.ctx.font = "30px Arial";
         this.ctx.fillText("(aperte space para reiniciar)", this.width / 2, this.height / 2 + 100);
     }
@@ -255,6 +276,9 @@ class Game {
                 break;
             case this.GAME_STAGE.RUNNING:
                 this.gameObjects.forEach(obj => obj.draw());
+                break;
+            case this.GAME_STAGE.ARTHURLEVELFINALANIMATION:
+                this.level.arthurFinalAnimation();
                 break;
             case this.GAME_STAGE.PAUSED:
                 this.pause();
@@ -305,12 +329,12 @@ class Img {
     }
     draw() {
         if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
-        this.game.ctx.drawImage(this.img,
-            (this.position.x),
-            (this.position.y),
-            (this.width),
-            (this.height)
-        );
+            this.game.ctx.drawImage(this.img,
+                (this.position.x),
+                (this.position.y),
+                (this.width),
+                (this.height)
+            );
     }
     update() { }
 }
@@ -419,9 +443,9 @@ class Monster {
                 this.lastMove[1]++;
             }
         }
-        if (this.game.mainCharater.lastMove == "left") {
+        if (this.game.mainCharater.lastMove == "left" && this.position.x <= this.game.mainCharater.position.x) {
             this.position.x += 5;
-        } else if (this.game.mainCharater.lastMove == "right") {
+        } else if (this.game.mainCharater.lastMove == "right" && this.position.x >= this.game.mainCharater.position.x) {
             this.position.x -= 25;
         }
     }
@@ -429,6 +453,7 @@ class Monster {
 class Level {
     constructor(game, level) {
         this.game = game;
+        this.level = level;
         this.monsters1XPos = level.m1X.slice();
         this.monsters2XPos = level.m2X.slice();
         this.blocksX = level.blocks.slice();
@@ -440,6 +465,7 @@ class Level {
         this.aside = level.aside;
 
         this.timeCounter = 0;
+        this.finalAnimationTime = 0;
 
         this.game.runningSongPlaying = level.soundtrack;
 
@@ -474,6 +500,47 @@ class Level {
     createBlocks(blockX) {
         this.blocks.push(new Block(this.game, blockX, this.game.mainCharater.position.y - 100));
     }
+    arthurFinalAnimation() {
+        this.game.mago.draw();
+        this.game.mainCharater.position.y = this.game.height - this.game.mainCharater.height - this.game.mainCharater.capeHeight;
+        this.game.mainCharater.update();
+        this.game.mainCharater.draw();
+        let font = "30px Arial";
+        let color = "black";
+        let positionX = this.game.mago.position.x - 300;
+        let positionY = this.game.mago.position.y - 30;
+        let text0 = "Chegastes ao boss dessa fase!";
+        let text1 = "Para derrotá-lo, terás que trocar de corpo!";
+        let text2 = "Desinrugar, virar cobra!";
+        let text3 = "Não te preocupes, cuidarei desse detalhe.";
+        let text4 = "Ganharás um novo poder!";
+        let text5 = "Aperte 'q' para liberá-lo!";
+        let text6 = "Sê tu forte e corajoso!";
+        let text7 = "Boa sorte!";
+        if (this.finalAnimationTime < 200) {
+            this.game.drawText(text0, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 400 && this.finalAnimationTime >= 200) {
+            this.game.drawText(text1, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 600 && this.finalAnimationTime >= 400) {
+            this.game.drawText(text2, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 800 && this.finalAnimationTime >= 600) {
+            this.game.drawText(text3, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 1000 && this.finalAnimationTime >= 800) {
+            this.game.drawText(text4, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 1200 && this.finalAnimationTime >= 1000) {
+            this.game.drawText(text5, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 1400 && this.finalAnimationTime >= 1200) {
+            this.game.drawText(text6, font, color, positionX, positionY);
+        } else if (this.finalAnimationTime < 1600 && this.finalAnimationTime >= 1400) {
+            this.game.drawText(text7, font, color, positionX, positionY);
+        } else {
+            this.finalAnimationTime = -2;
+            this.monsters = [];
+            this.game.mainCharater.position.y = this.game.mainCharater.initialPositionY; 
+            this.game.runGame();
+        }
+        this.finalAnimationTime++;
+    }
     update() {
         let increment = 500;
         this.monsters1XPos.forEach((monster1X, index, array) => this.dropMonster(monster1X, this.monster1Left, this.monster1Right, index, array, increment, this.measures[0], this.measures[1]));
@@ -486,6 +553,11 @@ class Level {
         if (this.objs.length != 0) this.objs.forEach(obj => obj.update());
 
         this.objs.filter(obj => obj.className == "Fountain").forEach(f => f.toggleWater());
+
+        if (this.game.x >= 8800 && this.game.x <= 8900 && this.finalAnimationTime != -1) {
+            this.game.gameStage = this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION;
+            this.game.runningSongPlaying.pause();
+        }
     }
 }
 class InputHandler {
@@ -499,7 +571,7 @@ class InputHandler {
                             this.game.menuAnimationOn = true;
                             this.game.cobraSong.play();
                         } else {
-                            this.game.level = new Level(this.game, ArthurLevel);
+                            this.game.level = new Level(this.game, arthurLevel);
                             this.game.gameObjects.push(this.game.level);
                             this.game.runGame();
                             this.game.cobraSong.pause();
@@ -736,7 +808,7 @@ canvas.height = value;
 const SCREEN_WIDTH = canvas.clientWidth;
 const SCREEN_HEIGHT = canvas.clientHeight;
 
-GAME_STAGE = { MENU: 0, RUNNING: 1, PAUSED: 2, GAMEOVER: 3 };
+GAME_STAGE = { MENU: 0, RUNNING: 1, PAUSED: 2, GAMEOVER: 3, ARTHURLEVELFINALANIMATION: 4 };
 
 let ctx = canvas.getContext("2d");
 
