@@ -1,3 +1,17 @@
+let canvas = document.getElementById("canvas");
+
+let stylew = window.getComputedStyle(canvas).width;
+let value = parseInt(stylew.substr(0, stylew.search("px")));
+canvas.width = value;
+let styleh = window.getComputedStyle(canvas).height;
+value = parseInt(styleh.substr(0, styleh.search("px")));
+canvas.height = value;
+
+let ctx = canvas.getContext("2d");
+
+const SCREEN_WIDTH = canvas.clientWidth;
+const SCREEN_HEIGHT = canvas.clientHeight;
+
 let arthurLevel = {
     soundtrack: document.getElementById("Bois-Dont-Cry-audio"),
     m1X: [200, 2000, 4000, 6000],
@@ -12,18 +26,21 @@ let arthurLevel = {
     aside: document.getElementById("fountain"),
     measures: [],
     boss: {
-        imgLeft: document.getElementById(""),
-        imgRight: document.getElementById(""),
-        width: 0,
-        height: 0,
-        posX: 0,
-        posY: 0
+        imgLeft: document.getElementById("Felipe-left"),
+        imgRight: document.getElementById("Felipe-right"),
+        width: 150,
+        height: 250,
+        posX: SCREEN_WIDTH  / 2,
+        posY: SCREEN_HEIGHT - 250
     }
 }
 
 let danieLevel = {};
+
 let joseLevel = {};
+
 let maykonLevel = {};
+
 class Game {
     constructor(gameWidth, gameHeight, ctx, GAME_STAGE) {
         this.width = gameWidth;
@@ -76,9 +93,6 @@ class Game {
         arthurLevel.measures.push(this.height / 2)///fountain y2
         arthurLevel.measures.push(this.mainCharater.width);//fountain w
         arthurLevel.measures.push(this.height / 2);//fountain h
-
-        this.lifeBar = new LifeBar(this);
-        this.gameObjects.push(this.lifeBar);
 
     }
 
@@ -269,6 +283,9 @@ class Game {
         this.ctx.fillStyle = color;
         this.ctx.fillText(text, positionX, positionY);
     }
+    releasePower() {
+        this.gameObjects.push(new Power(this));
+    }
     draw() {
         switch (this.gameStage) {
             case this.GAME_STAGE.MENU:
@@ -297,19 +314,67 @@ class Game {
         }
     }
 }
+class Power {
+    constructor(game) {
+        this.game = game;
+        this.position = {
+            x : (this.game.mainCharater.position.x + this.game.mainCharater.width),
+            y : (this.game.mainCharater.position.y + (this.game.mainCharater.height / 2))
+        };
+        this.speedX = (this.game.mainCharater.img == this.game.mainCharater.imgRight) ? 5 : -5;
+        this.width = 200;
+        this.height = 100;
+        if (this.game.level.level == arthurLevel) {
+            let texts = [
+                "A culpa é sua!",
+                "Tá no fundo do livro!",
+                "Já é outra ?"
+            ];
+            this.nextText = texts[Math.floor(Math.random() * 3)];
+        }
+    }
+    destruction() {
+        this.game.gameObjects.splice(this.game.gameObjects.indexOf(this), 1);
+    }
+    draw() {
+        if (this.game.level.level == arthurLevel) {
+            this.game.ctx.font = "20px Arial";
+            this.game.ctx.fillStyle = "black";
+            this.game.ctx.textAlign = "center";
+            this.game.ctx.fillText(this.nextText, this.position.x, this.position.y, this.width);
+        }
+    }
+    update() {
+        this.position.x += this.speedX;
+        if (this.position.x - this.width <= 0 || this.position.x + this.width > this.game.width)
+            this.destruction();
+        if (headLeftColision(this, this.game.level.boss) || headRightColision(this, this.game.level.boss)) {
+            this.game.level.boss.lifeBar.losePoints();
+            this.destruction();
+        }  
+    }
+}
 class LifeBar {
     constructor(game) {
         this.game = game;
-        this.points = 10;
+        this.points = 100;
         this.maxPoints = 100;
         this.position = { x: this.game.width - 310, y: 10 };
         this.width = 300;
         this.height = 30;
+        this.losePointsQuantity = 5;
+        this.color = "green";
+    }
+    setPositionY(y) {
+        this.position.y = y;
+    }
+    setColor(color) {
+        this.color = color;
     }
     draw() {
         this.game.ctx.rect(this.position.x, this.position.y, this.width, this.height);
         this.game.ctx.stroke();
-        this.game.ctx.fillStyle = "green";
+        this.game.ctx.fillStyle = this.color;
         this.game.ctx.fillRect(this.position.x + 1, this.position.y + 1,
             this.width * (this.points / 100) - 2, this.height - 2);
 
@@ -317,6 +382,9 @@ class LifeBar {
     update() {
         if (this.points > this.maxPoints) this.points = this.maxPoints;
         if (this.points <= 0) this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
+    }
+    losePoints() {
+        this.points -= this.losePointsQuantity;
     }
 }
 class Img {
@@ -384,7 +452,7 @@ class Fountain extends Img {
     }
 }
 class Monster {
-    constructor(game, imgLeft, imgRight, positionX, positionY, width, height) {
+    constructor(game, imgLeft, imgRight, positionX, positionY, width, height, follow) {
         this.game = game;
         this.imgLeft = imgLeft;
         this.imgRight = imgRight;
@@ -393,7 +461,10 @@ class Monster {
         this.initialPositionY = this.position.y;
         this.width = width;
         this.height = height;
+        this.follow = follow;
         this.lastMove = ["left", 0];
+        this.timeSpeed = 100;
+        this.speedX = 10;
     }
     draw() {
         if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
@@ -414,40 +485,140 @@ class Monster {
     }
 
     update() {
-        if (this.position.x + this.width >= this.game.mainCharater.position.x + 200) {
-            this.position.x -= 1;
-            this.lastMove[1] = 200;
-            this.lastMove[0] = "left";
-            if (this.img != this.imgLeft) this.img = this.imgLeft;
-        } else if (this.position.x + this.width <= this.game.mainCharater.position.x - 200) {
-            this.position.x += 1;
-            this.lastMove[1] = 200;
-            this.lastMove[0] = "right";
+        if (this.lastMove[1] == this.timeSpeed) {
+            this.lastMove[1] = 0;
+            if (this.lastMove[0] == "left") {
+                this.lastMove[0] = "right";
+            } else {
+                this.lastMove[0] = "left";
+            }
+        }
+        else if (this.lastMove[0] == "left" && this.lastMove[1] < this.timeSpeed) {
+            this.position.x += this.speedX;
             if (this.img != this.imgRight) this.img = this.imgRight;
+            this.lastMove[1]++;
+        } else if (this.lastMove[0] == "right" && this.lastMove[1] < this.timeSpeed) {
+            this.position.x -= this.speedX;
+            if (this.img != this.imgLeft) this.img = this.imgLeft;
+            this.lastMove[1]++;
+        }
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += this.speedX;
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= this.speedX;
+        }
+    }
+}
+class Ball {
+    constructor(game, posX, radius, startAngle, endAngle, anticlockwise) {
+        this.game = game;
+        this.radius = radius;
+        this.startAngle = startAngle;
+        this.endAngle = endAngle;
+        this.anticlockwise = anticlockwise;
+        this.width = this.radius * 2;
+        this.height = this.radius * 2;
+        this.speedX = 0;
+        this.timeOfColision = 0;
+        this.position = { x: posX, y: Math.floor(Math.random() * (this.game.height - this.height)) };
+        if (this.game.level.boss.lastMove[0] == "left") {
+            this.speedX = -5;
         } else {
-            if (this.lastMove[1] == 200) {
-                this.lastMove[1] = 0;
-                if (this.lastMove[0] == "left") {
-                    this.lastMove[0] = "right";
-                } else {
-                    this.lastMove[0] = "left";
-                }
-            }
-            else if (this.lastMove[0] == "left" && this.lastMove[1] < 200) {
-                this.position.x += 5;
-                if (this.img != this.imgRight) this.img = this.imgRight;
-                this.lastMove[1]++;
-            } else if (this.lastMove[0] == "right" && this.lastMove[1] < 200) {
-                this.position.x -= 5;
-                if (this.img != this.imgLeft) this.img = this.imgLeft;
-                this.lastMove[1]++;
-            }
+            this.speedX = 5;
         }
-        if (this.game.mainCharater.lastMove == "left" && this.position.x <= this.game.mainCharater.position.x) {
-            this.position.x += 5;
-        } else if (this.game.mainCharater.lastMove == "right" && this.position.x >= this.game.mainCharater.position.x) {
-            this.position.x -= 25;
+    }
+
+    leftColision() {
+        let c = this.game.mainCharater;
+        let cRight = c.capePosition.x + c.capeWidth;
+        let cTop = c.position.y;
+        let cBottom = c.capePosition.y + c.capeHeight;
+        let thisMiddleY = (this.position.y + (this.height / 3.5));
+        let thisLeft = this.position.x;
+        let thisRight = this.position.x + this.width;
+        return (cRight >= thisLeft && cRight <= thisRight &&
+            thisMiddleY <= cBottom && thisMiddleY >= cTop);
+
+    }
+    rightColision() {
+        let c = this.game.mainCharater;
+        let cLeft = c.capePosition.x;
+        let cTop = c.position.y;
+        let cBottom = c.capePosition.y + c.capeHeight;
+        let thisMiddleY = (this.position.y + (this.height / 3.5));
+        let thisLeft = this.position.x + this.width;
+        let thisRight = this.position.x + this.width;
+        return (cLeft >= thisLeft && cLeft <= thisRight &&
+            thisMiddleY <= cBottom && thisMiddleY >= cTop);
+    }
+    draw() {
+        if ((this.position.x >= -this.width && this.position.x + this.width <= this.game.width)) {
+            this.game.ctx.beginPath();
+            this.game.ctx.arc(this.position.x, this.position.y, this.radius, this.startAngle, this.endAngle, this.anticlockwise);
+            this.game.ctx.fillStyle = "blue";
+            this.game.ctx.fill();
         }
+
+    }
+    update() {
+        if (this.leftColision() || this.rightColision()) {
+            if (this.timeOfColision == 2) {
+                this.game.level.lifeBar.losePoints();
+                this.timeOfColision = 0;
+            } else {
+                this.timeOfColision++;
+            }
+        } else {
+            this.timeOfColision = 0;
+        }
+        this.position.x += this.speedX;
+    }
+}
+class Boss extends Monster {
+    constructor(game, imgLeft, imgRight, positionX, positionY, width, height) {
+        super(game, imgLeft, imgRight, positionX, positionY, width, height);
+        this.timeSpeed = 200;
+        this.speedX = 5;
+        this.timeToShoot = 0;
+        this.timeToChangeY = 0;
+        this.balls = [];
+
+        this.lifeBar = new LifeBar(this.game);
+        this.lifeBar.setPositionY(this.game.level.lifeBar.position.y +
+            this.game.level.lifeBar.height + 10);
+        this.lifeBar.setColor("red");
+        this.lifeBar.losePointsQuantity = 1;
+    }
+    shoot() {
+        this.balls.push(new Ball(this.game, this.position.x + 300, 20, 1, 360, false));
+        this.balls.push(new Ball(this.game, this.position.x - 300, 20, 1, 360, false));
+        this.balls.push(new Ball(this.game, this.position.x, 20, 1, 360, false));
+    }
+    draw() {
+        super.draw();
+        if (this.balls.length != 0) this.balls.forEach(b => b.draw());
+        this.lifeBar.draw();
+    }
+    changeY() {
+        this.position.y = Math.floor(Math.random() * (this.game.height - this.height));
+    }
+    update() {
+        super.update();
+
+        if (this.timeToShoot == 200) {
+            this.timeToShoot = 0;
+            this.shoot();
+        } else {
+            this.timeToShoot++;
+        }
+
+        if (this.timeToChangeY == 400) {
+            this.timeToChangeY = 0;
+            this.changeY();
+        } else {
+            this.timeToChangeY++;
+        }
+        if (this.balls.length != 0) this.balls.forEach(b => b.update());
     }
 }
 class Level {
@@ -466,26 +637,35 @@ class Level {
 
         this.timeCounter = 0;
         this.finalAnimationTime = 0;
+        this.dropMonsterCounter = 2;
+        this.finalAnimationDone = false;
 
         this.game.runningSongPlaying = level.soundtrack;
 
         this.monsters = [];
         this.objs = [];
         this.blocks = [];
+        this.boss = null;
 
         this.blocksX.forEach(blockX => this.createBlocks(blockX));
         this.createAside();
+
+        this.lifeBar = new LifeBar(this.game);
+        this.objs.push(this.lifeBar);
+
     }
     draw() {
         if (this.monsters.length != 0) this.monsters.forEach(m => m.draw());
         if (this.objs.length != 0) this.objs.forEach(obj => obj.draw());
         if (this.blocks.length != 0) this.blocks.forEach(b => b.draw());
+        if (this.boss != null) this.boss.draw();
     }
     dropMonster(monsterX, imgLeft, imgRight, index, array, increment, width, height) {
+        let follow = (this.dropMonsterCounter % 2 == 0);
         if (monsterX == this.game.x) {
+            this.dropMonsterCounter++;
             let m = new Monster(this.game, imgLeft, imgRight, (this.game.mainCharater.position.x + increment),
-                (this.game.mainCharater.initialPositionY),
-                width, height);
+                this.game.mainCharater.initialPositionY, width, height, follow);
             this.monsters.push(m);
 
             array.splice(index, 1);
@@ -507,12 +687,12 @@ class Level {
         this.game.mainCharater.draw();
         let font = "30px Arial";
         let color = "black";
-        let positionX = this.game.mago.position.x - 300;
+        let positionX = this.game.mago.position.x - 100;
         let positionY = this.game.mago.position.y - 30;
         let text0 = "Chegastes ao boss dessa fase!";
         let text1 = "Para derrotá-lo, terás que trocar de corpo!";
         let text2 = "Desinrugar, virar cobra!";
-        let text3 = "Não te preocupes, cuidarei desse detalhe.";
+        let text3 = "Tudo errado essas pergunta!";
         let text4 = "Ganharás um novo poder!";
         let text5 = "Aperte 'q' para liberá-lo!";
         let text6 = "Sê tu forte e corajoso!";
@@ -536,10 +716,16 @@ class Level {
         } else {
             this.finalAnimationTime = -2;
             this.monsters = [];
-            this.game.mainCharater.position.y = this.game.mainCharater.initialPositionY; 
             this.game.runGame();
+            this.boss = new Boss(this.game, arthurLevel.boss.imgLeft,
+                arthurLevel.boss.imgRight, arthurLevel.boss.posX, arthurLevel.boss.posY,
+                arthurLevel.boss.width, arthurLevel.boss.height);
+            this.finalAnimationDone = true;
         }
         this.finalAnimationTime++;
+    }
+    skipFinalAnimation() {
+        this.finalAnimationTime = 1600;
     }
     update() {
         let increment = 500;
@@ -547,6 +733,7 @@ class Level {
         this.monsters2XPos.forEach((monster2X, index, array) => this.dropMonster(monster2X, this.monster2Left, this.monster2Right, index, array, -increment, this.measures[2], this.measures[3]));
         if (this.monsters.length != 0) this.monsters.forEach(m => m.update());
         if (this.monsters.length != 0) this.monsters.forEach(m => m.detectedColision(this));
+        if (this.boss != null) this.boss.detectedColision(this);
 
         (this.timeCounter > 500) ? this.timeCounter = 0 : this.timeCounter++;
         if (this.blocks.length != 0) this.blocks.forEach(b => b.update());
@@ -558,6 +745,7 @@ class Level {
             this.game.gameStage = this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION;
             this.game.runningSongPlaying.pause();
         }
+        if (this.boss != null) this.boss.update();
     }
 }
 class InputHandler {
@@ -579,6 +767,8 @@ class InputHandler {
                     } else if (this.game.gameStage == this.game.GAME_STAGE.GAMEOVER) {
                         this.game.start();
                         this.game.gameStage = this.game.GAME_STAGE.MENU;
+                    } else if (this.game.gameStage == this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION) {
+                        this.game.level.skipFinalAnimation();
                     }
                     break;
                 case 37:
@@ -597,6 +787,13 @@ class InputHandler {
                 case 27:
                     this.game.togglePause();
                     break;
+                case 81:
+                    if(this.game.gameStage == this.game.GAME_STAGE.RUNNING &&
+                       this.game.level.level == arthurLevel &&
+                       this.game.level.finalAnimationDone) {
+                            this.game.releasePower();
+                        }
+                        break;
                 default:
                     break;
             }
@@ -794,23 +991,10 @@ function bottomColision(character, obj) {
 
     return (cBottom >= objTop && cBottom < objMiddleY &&
         objMiddleX >= cLeft && objMiddleX <= cRight);
-
 }
-let canvas = document.getElementById("canvas");
-
-let stylew = window.getComputedStyle(canvas).width;
-let value = parseInt(stylew.substr(0, stylew.search("px")));
-canvas.width = value;
-let styleh = window.getComputedStyle(canvas).height;
-value = parseInt(styleh.substr(0, styleh.search("px")));
-canvas.height = value;
-
-const SCREEN_WIDTH = canvas.clientWidth;
-const SCREEN_HEIGHT = canvas.clientHeight;
 
 GAME_STAGE = { MENU: 0, RUNNING: 1, PAUSED: 2, GAMEOVER: 3, ARTHURLEVELFINALANIMATION: 4 };
 
-let ctx = canvas.getContext("2d");
 
 let game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, ctx, GAME_STAGE);
 game.start();
