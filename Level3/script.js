@@ -11,9 +11,8 @@ let ctx = canvas.getContext("2d");
 
 const SCREEN_WIDTH = canvas.clientWidth;
 const SCREEN_HEIGHT = canvas.clientHeight;
-
-let arthurLevel = {
-    soundtrack: document.getElementById("Bois-Dont-Cry-audio"),
+let danielLevel = {
+    soundtrack: document.getElementById("Quer-Tomar-Bomba-audio"),
     m1X: [200, 2000, 4000, 6000],
     m2X: [300, 600, 700, 5000, 8800],
     blocks: [200, 300, 400, 500, 900, 1500, 2000, 2100, 2200, 2500, 3400, 3500,
@@ -30,16 +29,11 @@ let arthurLevel = {
         imgRight: document.getElementById("Felipe-right"),
         width: 150,
         height: 250,
-        posX: SCREEN_WIDTH  / 2,
+        posX: SCREEN_WIDTH / 2,
         posY: SCREEN_HEIGHT - 250
     }
 }
 
-let danieLevel = {};
-
-let joseLevel = {};
-
-let maykonLevel = {};
 
 class Game {
     constructor(gameWidth, gameHeight, ctx, GAME_STAGE) {
@@ -83,16 +77,16 @@ class Game {
             document.getElementById("cape-right-rotate"));
 
         this.gameObjects = [this.mainCharater];
-        arthurLevel.measures.push(this.mainCharater.capeWidth + 50);//m1 2
-        arthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
-        arthurLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
-        arthurLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
-        arthurLevel.measures.push(3100);//fountain x
-        arthurLevel.measures.push(this.height / 2)///fountain y
-        arthurLevel.measures.push(8000);//fountain x2
-        arthurLevel.measures.push(this.height / 2)///fountain y2
-        arthurLevel.measures.push(this.mainCharater.width);//fountain w
-        arthurLevel.measures.push(this.height / 2);//fountain h
+        danielLevel.measures.push(this.mainCharater.capeWidth + 50);//m1 2
+        danielLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
+        danielLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
+        danielLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
+        danielLevel.measures.push(3100);//fountain x
+        danielLevel.measures.push(this.height / 2)///fountain y
+        danielLevel.measures.push(8000);//fountain x2
+        danielLevel.measures.push(this.height / 2)///fountain y2
+        danielLevel.measures.push(this.mainCharater.width);//fountain w
+        danielLevel.measures.push(this.height / 2);//fountain h
 
     }
 
@@ -109,96 +103,46 @@ class Game {
                 (this.mainCharater.width * 4),
                 (this.mainCharater.capeHeight * 2.5)
             );
-            if (this.initionAnimationBeforeMago) {
-                this.bus.draw();
-                this.camaro.draw();
-            }
-            this.camaro.position.x += 2;
-            if (this.camaro.position.x >= this.width) {
-                this.cobraSong.pause();
-                this.narutoSadSong.play();
-                let text0 = "(Aperte space para pular animação)";
-                let text1 = "Carai, eu sou um merda, mermão... Eu moro num ônibus!!!";
-                let text2 = "Sou muito pobre... Queria tanto ser o dono da Lage!"
-                let text3 = "Quero mudar de vida... Mas não quero entrar pro crime!";
-                let text4 = "Já sei! Vou salvar várias meninas aleatórias..."
-                let text4_2 = "e perguntar se elas querem morar no meu harém!";
-                let text5 = "E vou tomar bomba ! HAHAHAHAHHAHA";
-                let text6 = "Olá! Sou C-Abriu?!, o Mago.";
-                let text7 = "Se queres se tornar o dono da Lage";
-                let text8 = "Deves pegar 5 meninas para teu harém";
-                let text9 = "E, só assim, iniciarás teu reinado!";
-                let text10 = "Deves começar pelo Redondo :";
-                let text11 = "com Arthur, o Gado!";
-                let font = "30px Arial";
-                let color = "black";
-                let positionX = this.mainCharater.position.x + 400;
-                let positionY = this.mainCharater.position.y - 30;
-                if (this.text0Counter < 150) {
-                    this.drawText(text0, "20px Arial", color, positionX, positionY);
-                    this.text0Counter++;
-                } else if (this.text1Counter < 300) {
-                    this.drawText(text1, font, color, positionX, positionY);
-                    this.text1Counter++;
-                    this.bus.draw();
-                } else if (this.text2Counter < 300) {
-                    this.drawText(text2, font, color, positionX, positionY);
-                    this.text2Counter++;
-                    this.bus.draw();
-                } else if (this.text3Counter < 300) {
-                    this.drawText(text3, font, color, positionX, positionY);
-                    this.text3Counter++;
-                    this.bus.draw();
-                } else if (this.text4Counter < 400) {
-                    if (this.text4Counter < 200) {
-                        this.drawText(text4, font, color, positionX + 100, positionY);
-                    }
-                    else {
-                        this.drawText(text4_2, font, color, positionX + 100, positionY);
-                    }
-                    this.text4Counter++;
-                    this.bus.draw();
-                } else if (this.text5Counter < 250) {
-                    this.drawText(text5, font, color, positionX, positionY);
-                    this.text5Counter++;
-                    this.bus.draw();
-                } else if (this.text6Counter < 250) {
-                    positionY -= 80;
-                    this.drawText(text6, font, color, positionX, positionY);
-                    this.text6Counter++;
-                    this.mago.draw();
-                    this.initionAnimationBeforeMago = false;
-                } else if (this.text7Counter < 250) {
-                    positionY -= 80;
-                    this.drawText(text7, font, color, positionX, positionY);
-                    this.text7Counter++;
-                    this.mago.draw();
-                } else if (this.text8Counter < 250) {
-                    positionY -= 80;
-                    this.drawText(text8, font, color, positionX, positionY);
-                    this.text8Counter++;
-                    this.mago.draw();
-                } else if (this.text9Counter < 250) {
-                    positionY -= 80;
-                    this.drawText(text9, font, color, positionX, positionY);
-                    this.text9Counter++;
-                    this.mago.draw();
-                } else if (this.text10Counter < 250) {
-                    positionY -= 80;
-                    this.drawText(text10, font, color, positionX, positionY);
-                    this.text10Counter++;
-                    this.mago.draw();
-                } else if (this.text11Counter < 250) {
-                    positionY -= 80;
-                    this.drawText(text11, font, color, positionX, positionY);
-                    this.text11Counter++;
-                    this.mago.draw();
-                } else {
-                    this.narutoSadSong.pause();
-                    this.level = new Level(this, arthurLevel);
-                    this.gameObjects.push(this.level);
-                    this.runGame();
-                }
+            this.bus.draw();
+            this.mago.position.x = this.width - this.mago.width - 10;
+            this.mago.draw();
+            let text0 = "(Aperte space para pular animação)";
+            let text1 = "Olá! Sou eu, novamente.";
+            let text2 = "Conseguistes roubar a menina do Arthur";
+            let text3 = "Todavia, ainda faltam 3!";
+            let text4 = "E, só assim, iniciarás teu reinado!";
+            let text5 = "Deves ir ao GLORIOSO Bairro Novo:";
+            let text6 = "enfrentará Daniel, o Tubarão";
+            let font = "30px Arial";
+            let color = "black";
+            let positionX = this.mainCharater.position.x + 400;
+            let positionY = this.mainCharater.position.y - 30;
+            if (this.text0Counter < 150) {
+                this.drawText(text0, "20px Arial", color, positionX, positionY);
+                this.text0Counter++;
+            } else if (this.text1Counter < 300) {
+                this.drawText(text1, font, color, positionX, positionY);
+                this.text1Counter++;
+            } else if (this.text2Counter < 300) {
+                this.drawText(text2, font, color, positionX, positionY);
+                this.text2Counter++;
+            } else if (this.text3Counter < 300) {
+                this.drawText(text3, font, color, positionX, positionY);
+                this.text3Counter++;
+            } else if (this.text4Counter < 400) {
+                this.drawText(text4, font, color, positionX + 100, positionY);
+                this.text4Counter++;
+            } else if (this.text5Counter < 250) {
+                this.drawText(text5, font, color, positionX, positionY);
+                this.text5Counter++;
+            } else if (this.text6Counter < 250) {
+                positionY -= 80;
+                this.drawText(text6, font, color, positionX, positionY);
+                this.text6Counter++;
+            } else {
+                this.level = new Level(this, danielLevel);
+                this.gameObjects.push(this.level);
+                this.runGame();
             }
         }
         else {
@@ -209,19 +153,15 @@ class Game {
             this.text4Counter = 0;
             this.text5Counter = 0;
             this.text6Counter = 0;
-            this.text7Counter = 0;
-            this.text8Counter = 0;
-            this.text9Counter = 0;
-            this.text10Counter = 0;
-            this.text11Counter = 0;
-            this.ctx.rect(0, 0, this.width, this.height);
-            this.ctx.fillStyle = "rgb(0,0,0)";
-            this.ctx.fill();
 
-            this.ctx.font = "50px Arial";
             this.ctx.fillStyle = "white";
+            this.ctx.rect(0, 0, this.width, this.height);
+            this.ctx.fill();
+            
+            this.ctx.font = "50px Arial";
+            this.ctx.fillStyle = "black";
             this.ctx.textAlign = "center";
-            this.ctx.fillText("Press space to start the game", this.width / 2, this.height / 2);
+            this.ctx.fillText("Level 2 - Press space", this.width / 2, this.height / 2);
 
             this.mainCharater.draw();
         }
@@ -266,7 +206,7 @@ class Game {
         this.ctx.font = "50px Arial";
         this.ctx.fillStyle = "white";
         this.ctx.textAlign = "center";
-        if (this.level.level == arthurLevel) {
+        if (this.level.level == danielLevel) {
             this.ctx.fillText("Conversa é entre gente, cachorro fica na corrente!", this.width / 2, this.height / 2);
         } else if (this.level.level == danieLevel) {
             this.ctx.fillText("Conversa é entre dois, macaco fica pra depois!", this.width / 2, this.height / 2);
@@ -318,13 +258,13 @@ class Power {
     constructor(game) {
         this.game = game;
         this.position = {
-            x : (this.game.mainCharater.position.x + this.game.mainCharater.width),
-            y : (this.game.mainCharater.position.y + (this.game.mainCharater.height / 2))
+            x: (this.game.mainCharater.position.x + this.game.mainCharater.width),
+            y: (this.game.mainCharater.position.y + (this.game.mainCharater.height / 2))
         };
         this.speedX = (this.game.mainCharater.img == this.game.mainCharater.imgRight) ? 5 : -5;
         this.width = 200;
         this.height = 100;
-        if (this.game.level.level == arthurLevel) {
+        if (this.game.level.level == danielLevel) {
             let texts = [
                 "A culpa é sua!",
                 "Tá no fundo do livro!",
@@ -337,7 +277,7 @@ class Power {
         this.game.gameObjects.splice(this.game.gameObjects.indexOf(this), 1);
     }
     draw() {
-        if (this.game.level.level == arthurLevel) {
+        if (this.game.level.level == danielLevel) {
             this.game.ctx.font = "20px Arial";
             this.game.ctx.fillStyle = "black";
             this.game.ctx.textAlign = "center";
@@ -351,7 +291,7 @@ class Power {
         if (headLeftColision(this, this.game.level.boss) || headRightColision(this, this.game.level.boss)) {
             this.game.level.boss.lifeBar.losePoints();
             this.destruction();
-        }  
+        }
     }
 }
 class LifeBar {
@@ -363,6 +303,7 @@ class LifeBar {
         this.width = 300;
         this.height = 30;
         this.losePointsQuantity = 5;
+        this.gainPointsQuantity = 10;
         this.color = "green";
     }
     setPositionY(y) {
@@ -381,8 +322,15 @@ class LifeBar {
     }
     update() {
         if (this.points > this.maxPoints) this.points = this.maxPoints;
-        if (this.points <= 0) this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
+
+        if (this.points < 0) this.points = 0;
+
+        if (this.game.level.lifeBar == this && this.points == 0)
+            this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
     }
+    gainPoints() {
+        this.game.level.lifeBar.points += this.gainPointsQuantity;
+    } 
     losePoints() {
         this.points -= this.losePointsQuantity;
     }
@@ -480,7 +428,7 @@ class Monster {
             this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
         } else if (bottomColision(this.game.mainCharater, this)) {
             level.monsters.splice(level.monsters.indexOf(this), 1);
-            this.game.lifeBar.points += 10;
+            this.game.level.lifeBar.gainPoints();
         }
     }
 
@@ -587,7 +535,7 @@ class Boss extends Monster {
         this.lifeBar.setPositionY(this.game.level.lifeBar.position.y +
             this.game.level.lifeBar.height + 10);
         this.lifeBar.setColor("red");
-        this.lifeBar.losePointsQuantity = 1;
+        this.lifeBar.losePointsQuantity = 50;
     }
     shoot() {
         this.balls.push(new Ball(this.game, this.position.x + 300, 20, 1, 360, false));
@@ -619,6 +567,7 @@ class Boss extends Monster {
             this.timeToChangeY++;
         }
         if (this.balls.length != 0) this.balls.forEach(b => b.update());
+        this.lifeBar.update();
     }
 }
 class Level {
@@ -717,9 +666,9 @@ class Level {
             this.finalAnimationTime = -2;
             this.monsters = [];
             this.game.runGame();
-            this.boss = new Boss(this.game, arthurLevel.boss.imgLeft,
-                arthurLevel.boss.imgRight, arthurLevel.boss.posX, arthurLevel.boss.posY,
-                arthurLevel.boss.width, arthurLevel.boss.height);
+            this.boss = new Boss(this.game, danielLevel.boss.imgLeft,
+                danielLevel.boss.imgRight, danielLevel.boss.posX, danielLevel.boss.posY,
+                danielLevel.boss.width, danielLevel.boss.height);
             this.finalAnimationDone = true;
         }
         this.finalAnimationTime++;
@@ -745,7 +694,15 @@ class Level {
             this.game.gameStage = this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION;
             this.game.runningSongPlaying.pause();
         }
-        if (this.boss != null) this.boss.update();
+        if (this.boss != null) {
+            this.boss.update();
+
+            if (this.boss.lifeBar.points <= 0) {
+                let nextLevel = document.getElementById("next-level");
+                nextLevel.click();
+            }
+        }
+
     }
 }
 class InputHandler {
@@ -757,9 +714,8 @@ class InputHandler {
                     if (this.game.gameStage == this.game.GAME_STAGE.MENU) {
                         if (this.game.menuAnimationOn != true) {
                             this.game.menuAnimationOn = true;
-                            this.game.cobraSong.play();
                         } else {
-                            this.game.level = new Level(this.game, arthurLevel);
+                            this.game.level = new Level(this.game, danielLevel);
                             this.game.gameObjects.push(this.game.level);
                             this.game.runGame();
                             this.game.cobraSong.pause();
@@ -788,12 +744,12 @@ class InputHandler {
                     this.game.togglePause();
                     break;
                 case 81:
-                    if(this.game.gameStage == this.game.GAME_STAGE.RUNNING &&
-                       this.game.level.level == arthurLevel &&
-                       this.game.level.finalAnimationDone) {
-                            this.game.releasePower();
-                        }
-                        break;
+                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING &&
+                        this.game.level.level == danielLevel &&
+                        this.game.level.finalAnimationDone) {
+                        this.game.releasePower();
+                    }
+                    break;
                 default:
                     break;
             }
