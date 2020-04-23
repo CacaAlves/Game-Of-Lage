@@ -161,7 +161,7 @@ class Game {
             this.ctx.font = "50px Arial";
             this.ctx.fillStyle = "black";
             this.ctx.textAlign = "center";
-            this.ctx.fillText("Level 2 - Press space", this.width / 2, this.height / 2);
+            this.ctx.fillText("Level 3 - Press space", this.width / 2, this.height / 2);
 
             this.mainCharater.draw();
         }

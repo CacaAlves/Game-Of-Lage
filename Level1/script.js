@@ -121,7 +121,7 @@ class Game {
                 let text5 = "E vou tomar bomba ! HAHAHAHAHHAHA";
                 let text6 = "Olá! Sou C-Abriu?!, o Mago.";
                 let text7 = "Se queres se tornar o dono da Lage";
-                let text8 = "Deves pegar 4 meninas para teu harém";
+                let text8 = "Deves pegar 3 meninas para teu harém";
                 let text9 = "E, só assim, iniciarás teu reinado!";
                 let text10 = "Deves começar pelo Redondo :";
                 let text11 = "com Arthur, o Gado!";
@@ -781,8 +781,8 @@ class InputHandler {
                             this.game.cobraSong.pause();
                         }
                     } else if (this.game.gameStage == this.game.GAME_STAGE.GAMEOVER) {
-                        this.game.start();
-                        this.game.gameStage = this.game.GAME_STAGE.MENU;
+                        let sameLevel = document.getElementById("same-level");
+                        sameLevel.click();
                     } else if (this.game.gameStage == this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION) {
                         this.game.level.skipFinalAnimation();
                     }
@@ -899,7 +899,6 @@ class Character {
         }
     }
     update() {
-        console.log(this.game.x);
         // this.position.x += this.speed.x;
         this.position.y += this.speed.y;
         if (this.speed.x == 0) {

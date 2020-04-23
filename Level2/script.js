@@ -78,12 +78,12 @@ class Game {
         danielLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
         danielLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
         danielLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
-        danielLevel.measures.push(300);//monster x 3100
-        danielLevel.measures.push(0)///monster y
-        danielLevel.measures.push(8000);//monster x2
-        danielLevel.measures.push(this.height / 2)///monster y2
-        danielLevel.measures.push(this.mainCharater.width);//monster w
-        danielLevel.measures.push(this.height / 2);//monster h
+        danielLevel.measures.push(300);//telephone x 
+        danielLevel.measures.push(0)///telephone y
+        danielLevel.measures.push(3100);//telephone x2
+        danielLevel.measures.push(this.height / 2)///telephone y2
+        danielLevel.measures.push(this.mainCharater.width + 50);//telephone w
+        danielLevel.measures.push(this.height / 3 + 50);//telephone h
 
     }
 
@@ -106,10 +106,10 @@ class Game {
             let text0 = "(Aperte space para pular animação)";
             let text1 = "Olá! Sou eu, novamente.";
             let text2 = "Conseguistes roubar a menina do Arthur";
-            let text3 = "Todavia, ainda faltam 3!";
+            let text3 = "Todavia, ainda faltam 2!";
             let text4 = "E, só assim, iniciarás teu reinado!";
             let text5 = "Deves ir ao GLORIOSO Bairro Novo:";
-            let text6 = "enfrentará Daniel, o Tubarão";
+            let text6 = "enfrentarás Daniel, o Tubarão";
             let font = "30px Arial";
             let color = "black";
             let positionX = this.mainCharater.position.x + 400;
@@ -221,7 +221,9 @@ class Game {
         this.ctx.fillText(text, positionX, positionY);
     }
     releasePower() {
-        this.gameObjects.push(new Power(this));
+        this.gameObjects.push(new Power(this, 10,
+            this.mainCharater.position.x, 1, 360, false));
+        this.gameObjects[this.gameObjects.length - 1].setColor("red");
     }
     draw() {
         switch (this.gameStage) {
@@ -252,49 +254,80 @@ class Game {
     }
 }
 class Power {
-    constructor(game) {
+    constructor(game, radius, startAngle, endAngle, anticlockwise) {
         this.game = game;
-        this.position = {
-            x: (this.game.mainCharater.position.x + this.game.mainCharater.width),
-            y: (this.game.mainCharater.position.y + (this.game.mainCharater.height / 2))
-        };
-        this.speedX = (this.game.mainCharater.img == this.game.mainCharater.imgRight) ? 5 : -5;
-        this.width = 200;
-        this.height = 100;
-        if (this.game.level.level == danielLevel) {
-            let texts = [
-                "A culpa é sua!",
-                "Tá no fundo do livro!",
-                "Já é outra ?"
-            ];
-            this.nextText = texts[Math.floor(Math.random() * 3)];
+        this.radius = radius;
+        this.startAngle = startAngle;
+        this.endAngle = endAngle;
+        this.anticlockwise = anticlockwise;
+        this.width = this.radius * 2;
+        this.height = this.radius * 2;
+        this.speedX = 0;
+        this.timeOfColision = 0;
+        this.color = "blue";
+        this.position = { x: this.game.mainCharater.position.x, y:this.game.mainCharater.position.y};
+        if (this.game.mainCharater == "left") {
+            this.speedX = -5;
+        } else {
+            this.speedX = 5;
         }
     }
     destruction() {
         this.game.gameObjects.splice(this.game.gameObjects.indexOf(this), 1);
     }
+    setColor(color) {
+        this.color = color;
+    }
+    leftColision() {
+        let c = this.game.level.boss;
+        let cRight = c.position.x + c.width;
+        let cTop = c.position.y;
+        let cBottom = c.position.y + c.height;
+        let thisMiddleY = (this.position.y + (this.height / 3.5));
+        let thisLeft = this.position.x;
+        let thisRight = this.position.x + this.width;
+        return (cRight >= thisLeft && cRight <= thisRight &&
+            thisMiddleY <= cBottom && thisMiddleY >= cTop);
+
+    }
+    rightColision() {
+        let c = this.game.level.boss;
+        let cLeft = c.position.x;
+        let cTop = c.position.y;
+        let cBottom = c.position.y + c.height;
+        let thisMiddleY = (this.position.y + (this.height / 3.5));
+        let thisLeft = this.position.x + this.width;
+        let thisRight = this.position.x + this.width;
+        return (cLeft >= thisLeft && cLeft <= thisRight &&
+            thisMiddleY <= cBottom && thisMiddleY >= cTop);
+    }
     draw() {
-        if (this.game.level.level == danielLevel) {
-            this.game.ctx.font = "20px Arial";
-            this.game.ctx.fillStyle = "black";
-            this.game.ctx.textAlign = "center";
-            this.game.ctx.fillText(this.nextText, this.position.x, this.position.y, this.width);
+        if ((this.position.x >= -this.width && this.position.x + this.width <= this.game.width)) {
+            this.game.ctx.beginPath();
+            this.game.ctx.arc(this.position.x, this.position.y, this.radius, this.startAngle, this.endAngle, this.anticlockwise);
+            this.game.ctx.fillStyle = this.color;
+            this.game.ctx.fill();
+            console.log("dew");
         }
     }
     update() {
-        this.position.x += this.speedX;
-        if (this.position.x - this.width <= 0 || this.position.x + this.width > this.game.width)
-            this.destruction();
-        if (headLeftColision(this, this.game.level.boss) || headRightColision(this, this.game.level.boss)) {
-            this.game.level.boss.lifeBar.losePoints();
-            this.destruction();
+        if (this.leftColision() || this.rightColision()) {
+            if (this.timeOfColision == 2) {
+                this.game.level.boss.lifeBar.losePoints();
+                this.timeOfColision = 0;
+            } else {
+                this.timeOfColision++;
+            }
+        } else {
+            this.timeOfColision = 0;
         }
+        this.position.x += this.speedX;
     }
 }
 class LifeBar {
     constructor(game) {
         this.game = game;
-        this.points = 100;
+        this.points = 10;
         this.maxPoints = 100;
         this.position = { x: this.game.width - 310, y: 10 };
         this.width = 300;
@@ -309,6 +342,9 @@ class LifeBar {
     setColor(color) {
         this.color = color;
     }
+    setPoints(points) {
+        this.points = points;
+    } 
     draw() {
         this.game.ctx.rect(this.position.x, this.position.y, this.width, this.height);
         this.game.ctx.stroke();
@@ -420,6 +456,7 @@ class Ball {
         this.height = this.radius * 2;
         this.speedX = 0;
         this.timeOfColision = 0;
+        this.color = "blue";
         this.position = { x: posX, y: Math.floor(Math.random() * (this.game.height - this.height)) };
         if (this.game.level.boss.lastMove[0] == "left") {
             this.speedX = -5;
@@ -427,7 +464,9 @@ class Ball {
             this.speedX = 5;
         }
     }
-
+    setColor(color) {
+        this.color = color;
+    }
     leftColision() {
         let c = this.game.mainCharater;
         let cRight = c.capePosition.x + c.capeWidth;
@@ -455,7 +494,7 @@ class Ball {
         if ((this.position.x >= -this.width && this.position.x + this.width <= this.game.width)) {
             this.game.ctx.beginPath();
             this.game.ctx.arc(this.position.x, this.position.y, this.radius, this.startAngle, this.endAngle, this.anticlockwise);
-            this.game.ctx.fillStyle = "blue";
+            this.game.ctx.fillStyle = this.color;
             this.game.ctx.fill();
         }
 
@@ -487,7 +526,8 @@ class Boss extends Monster {
         this.lifeBar.setPositionY(this.game.level.lifeBar.position.y +
             this.game.level.lifeBar.height + 10);
         this.lifeBar.setColor("red");
-        this.lifeBar.losePointsQuantity = 50;
+        this.lifeBar.setPoints(100);
+        this.lifeBar.losePointsQuantity = 1;
     }
     shoot() {
         this.balls.push(new Ball(this.game, this.position.x + 300, 20, 1, 360, false));
@@ -525,13 +565,13 @@ class Boss extends Monster {
 class Telephone extends Monster {
     constructor(game, imgLeft, imgRight, positionX, positionY, width, height, follow) {
         super(game, imgLeft, imgRight, positionX, positionY, width, height, follow);
-        this.speedY = 1000;
+        this.speedY = 1;
         this.className = "Telephone";
         this.direction = "down";
         console.log(this.position.x, this.position.y)
     }
     draw() {
-        // if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
+        if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
         this.game.ctx.drawImage(this.img,
             (this.position.x),
             (this.position.y),
@@ -540,29 +580,33 @@ class Telephone extends Monster {
         );
     }
     update() {
-        // if (this.game.mainCharater.lastMove == "left") {
-        //     this.position.x += this.speedX;
-        // } else if (this.game.mainCharater.lastMove == "right") {
-        //     this.position.x -= this.speedX;
-        // }
-        // if (this.direction == "down") {
-        //     while (this.position.y + this.height <= this.game.height) {
-        //         this.position.y += this.speedY;
-        //         if (this.position.y + this.height > this.game.height) {
-        //             this.position.y = this.game.height - this.height;
-        //         }
-        //         if (this.position.y + this.height >= this.game.height) {
-        //             this.direction = "up";
-        //         }
-        //     }
-        // } else {
-        //     while (this.position.y >= 0) {
-        //         this.position.y -= this.speedY;
-        //         if (this.position.y <)
-        //     }
-        //     if (this.position.y <= 0)
-        //         this.direction = "down";
-        // }
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += this.speedX;
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= this.speedX;
+        }
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += this.speedX;
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= this.speedX;
+        }
+        if (this.direction == "down") {
+            this.position.y += this.speedY;
+            if (this.position.y + this.height > this.game.height)
+                this.position.y = this.game.height - this.height;
+            if (this.position.y + this.height >= this.game.height)
+                this.direction = "up";
+        } else {
+            this.position.y -= this.speedY;
+            if (this.position.y < 0)
+            this.position.y = 0;
+            if (this.position.y == 0) 
+            this.direction = "down";
+                
+        }
+        if (leftColision(this.game.mainCharater, this) ||
+            rightColision(this.game.mainCharater, this))
+        this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
     }
 }
 class Level {
@@ -626,7 +670,7 @@ class Level {
         }
     }
     createBlocks(blockX) {
-        this.blocks.push(new Block(this.game, blockX, this.game.mainCharater.position.y - 100));
+        this.blocks.push(new Block(this.game, blockX, this.game.mainCharater.position.y - 10));
     }
     evaldoFinalAnimation() {
         this.game.mago.draw();
@@ -639,8 +683,8 @@ class Level {
         let positionY = this.game.mago.position.y - 30;
         let text0 = "Chegastes ao boss dessa fase!";
         let text1 = "Para derrotá-lo, terás que te tomar um decumento";
-        let text2 = "e se procurar de trabalhar!";
-        let text3 = "Tudo errado essas pergunta!";
+        let text2 = "Você não tá puro,";
+        let text3 = "daqui um mês já tá bombando";
         let text4 = "Ganharás um novo poder!";
         let text5 = "Aperte 'q' para liberá-lo!";
         let text6 = "Sê tu forte e corajoso!";
@@ -687,13 +731,6 @@ class Level {
         if (this.blocks.length != 0) this.blocks.forEach(b => b.update());
         if (this.objs.length != 0) this.objs.forEach(obj => obj.update());
 
-        if (this.objs.length != 0) {
-
-            this.objs.filter(m => m.className == "Telephone").
-                forEach(m => {
-                    m.detectedColision(this);
-                });
-        }
         if (this.game.x >= 8800 && this.game.x <= 8900 && this.finalAnimationTime != -1) {
             this.game.gameStage = this.game.GAME_STAGE.EVALDOFINALANIMATION;
             this.game.runningSongPlaying.pause();
@@ -724,8 +761,8 @@ class InputHandler {
                             this.game.runGame();
                         }
                     } else if (this.game.gameStage == this.game.GAME_STAGE.GAMEOVER) {
-                        this.game.start();
-                        this.game.gameStage = this.game.GAME_STAGE.MENU;
+                        let sameLevel = document.getElementById("same-level");
+                        sameLevel.click();
                     } else if (this.game.gameStage == this.game.GAME_STAGE.EVALDOFINALANIMATION) {
                         this.game.level.skipFinalAnimation();
                     }
