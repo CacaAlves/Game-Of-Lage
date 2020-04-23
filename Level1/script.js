@@ -30,7 +30,7 @@ let arthurLevel = {
         imgRight: document.getElementById("Felipe-right"),
         width: 150,
         height: 250,
-        posX: SCREEN_WIDTH  / 2,
+        posX: SCREEN_WIDTH / 2,
         posY: SCREEN_HEIGHT - 250
     }
 }
@@ -261,15 +261,7 @@ class Game {
         this.ctx.font = "50px Arial";
         this.ctx.fillStyle = "white";
         this.ctx.textAlign = "center";
-        if (this.level.level == arthurLevel) {
-            this.ctx.fillText("Conversa é entre gente, cachorro fica na corrente!", this.width / 2, this.height / 2);
-        } else if (this.level.level == danieLevel) {
-            this.ctx.fillText("Conversa é entre dois, macaco fica pra depois!", this.width / 2, this.height / 2);
-        } else if (this.level.level == joseLevel) {
-            this.ctx.fillText("Evaldo NÃO é bolo doido.", this.width / 2, this.height / 2);
-        } else {
-            this.ctx.fillText("Não estou vendo nenhum bolo, no momento!", this.width / 2, this.height / 2);
-        }
+        this.ctx.fillText("Conversa é entre gente, cachorro fica na corrente!", this.width / 2, this.height / 2);
         this.ctx.font = "30px Arial";
         this.ctx.fillText("(aperte space para reiniciar)", this.width / 2, this.height / 2 + 100);
     }
@@ -313,8 +305,8 @@ class Power {
     constructor(game) {
         this.game = game;
         this.position = {
-            x : (this.game.mainCharater.position.x + this.game.mainCharater.width),
-            y : (this.game.mainCharater.position.y + (this.game.mainCharater.height / 2))
+            x: (this.game.mainCharater.position.x + this.game.mainCharater.width),
+            y: (this.game.mainCharater.position.y + (this.game.mainCharater.height / 2))
         };
         this.speedX = (this.game.mainCharater.img == this.game.mainCharater.imgRight) ? 5 : -5;
         this.width = 200;
@@ -346,7 +338,7 @@ class Power {
         if (headLeftColision(this, this.game.level.boss) || headRightColision(this, this.game.level.boss)) {
             this.game.level.boss.lifeBar.losePoints();
             this.destruction();
-        }  
+        }
     }
 }
 class LifeBar {
@@ -388,7 +380,7 @@ class LifeBar {
     }
     gainPoints() {
         this.points += this.gainPointsQuantity;
-    } 
+    }
     losePoints() {
         this.points -= this.losePointsQuantity;
     }
@@ -753,14 +745,14 @@ class Level {
             this.game.gameStage = this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION;
             this.game.runningSongPlaying.pause();
         }
-        if (this.boss != null){
+        if (this.boss != null) {
             this.boss.update();
 
             if (this.boss.lifeBar.points <= 0) {
                 let nextLevel = document.getElementById("next-level");
                 nextLevel.click();
-            } 
-        } 
+            }
+        }
 
     }
 }
@@ -804,12 +796,12 @@ class InputHandler {
                     this.game.togglePause();
                     break;
                 case 81:
-                    if(this.game.gameStage == this.game.GAME_STAGE.RUNNING &&
-                       this.game.level.level == arthurLevel &&
-                       this.game.level.finalAnimationDone) {
-                            this.game.releasePower();
-                        }
-                        break;
+                    if (this.game.gameStage == this.game.GAME_STAGE.RUNNING &&
+                        this.game.level.level == arthurLevel &&
+                        this.game.level.finalAnimationDone) {
+                        this.game.releasePower();
+                    }
+                    break;
                 default:
                     break;
             }

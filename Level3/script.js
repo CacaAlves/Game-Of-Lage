@@ -11,22 +11,22 @@ let ctx = canvas.getContext("2d");
 
 const SCREEN_WIDTH = canvas.clientWidth;
 const SCREEN_HEIGHT = canvas.clientHeight;
-let danielLevel = {
-    soundtrack: document.getElementById("Quer-Tomar-Bomba-audio"),
+let joseLevel = {
+    soundtrack: document.getElementById("Palmeiras-audio"),
     m1X: [200, 2000, 4000, 6000],
     m2X: [300, 600, 700, 5000, 8800],
     blocks: [200, 300, 400, 500, 900, 1500, 2000, 2100, 2200, 2500, 3400, 3500,
         3600, 3700, 4000, 4500, 4600, 5000, 5100, 5200, 5300,
         6000, 6100, 6300, 7000, 7100, 7200, 7400, 7500, 8900],
-    m1Left: document.getElementById("Arthur-left"),
-    m1Right: document.getElementById("Arthur-right"),
-    m2Left: document.getElementById("Gado-left"),
-    m2Right: document.getElementById("Gado-right"),
-    aside: document.getElementById("fountain"),
+    m1Left: document.getElementById("Loli-left"),
+    m1Right: document.getElementById("Loli-right"),
+    m2Left: document.getElementById("Maykon-left"),
+    m2Right: document.getElementById("Maykon-right"),
+    aside: document.getElementById("Vitória"),
     measures: [],
     boss: {
-        imgLeft: document.getElementById("Felipe-left"),
-        imgRight: document.getElementById("Felipe-right"),
+        imgLeft: document.getElementById("José-left"),
+        imgRight: document.getElementById("José-right"),
         width: 150,
         height: 250,
         posX: SCREEN_WIDTH / 2,
@@ -77,16 +77,16 @@ class Game {
             document.getElementById("cape-right-rotate"));
 
         this.gameObjects = [this.mainCharater];
-        danielLevel.measures.push(this.mainCharater.capeWidth + 50);//m1 2
-        danielLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
-        danielLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
-        danielLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
-        danielLevel.measures.push(3100);//fountain x
-        danielLevel.measures.push(this.height / 2)///fountain y
-        danielLevel.measures.push(8000);//fountain x2
-        danielLevel.measures.push(this.height / 2)///fountain y2
-        danielLevel.measures.push(this.mainCharater.width);//fountain w
-        danielLevel.measures.push(this.height / 2);//fountain h
+        joseLevel.measures.push(this.mainCharater.capeWidth + 50);//m1 2
+        joseLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight)); //m1 h
+        joseLevel.measures.push((this.mainCharater.capeWidth * 3));//m2 w
+        joseLevel.measures.push((this.mainCharater.height + this.mainCharater.capeHeight));// m2 h
+        joseLevel.measures.push(300);//Vitória x
+        joseLevel.measures.push(this.height / 2)///Vitória y
+        joseLevel.measures.push(3000);//Vitória x2
+        joseLevel.measures.push(this.height / 2)///Vitória y2
+        joseLevel.measures.push(this.mainCharater.width * 2 - 50);//Vitória w
+        joseLevel.measures.push(this.height / 2 - 50);//Vitória h
 
     }
 
@@ -108,11 +108,11 @@ class Game {
             this.mago.draw();
             let text0 = "(Aperte space para pular animação)";
             let text1 = "Olá! Sou eu, novamente.";
-            let text2 = "Conseguistes roubar a menina do Arthur";
-            let text3 = "Todavia, ainda faltam 3!";
+            let text2 = "Conseguistes roubar a menina do Daniel";
+            let text3 = "Todavia, ainda falta 1!";
             let text4 = "E, só assim, iniciarás teu reinado!";
-            let text5 = "Deves ir ao GLORIOSO Bairro Novo:";
-            let text6 = "enfrentará Daniel, o Tubarão";
+            let text5 = "Deves ir à Itinga da Serra:";
+            let text6 = "enfrentará José, o Incel";
             let font = "30px Arial";
             let color = "black";
             let positionX = this.mainCharater.position.x + 400;
@@ -140,7 +140,7 @@ class Game {
                 this.drawText(text6, font, color, positionX, positionY);
                 this.text6Counter++;
             } else {
-                this.level = new Level(this, danielLevel);
+                this.level = new Level(this, joseLevel);
                 this.gameObjects.push(this.level);
                 this.runGame();
             }
@@ -168,7 +168,7 @@ class Game {
     }
     runGame() {
         if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.PAUSED ||
-            this.gameStage == this.GAME_STAGE.ARTHURLEVELFINALANIMATION) {
+            this.gameStage == this.GAME_STAGE.JOSELEVELFINALANIMATION) {
             this.gameStage = this.GAME_STAGE.RUNNING;
             this.runningSongPlaying.play();
         }
@@ -206,17 +206,19 @@ class Game {
         this.ctx.font = "50px Arial";
         this.ctx.fillStyle = "white";
         this.ctx.textAlign = "center";
-        if (this.level.level == danielLevel) {
-            this.ctx.fillText("Conversa é entre gente, cachorro fica na corrente!", this.width / 2, this.height / 2);
-        } else if (this.level.level == danieLevel) {
-            this.ctx.fillText("Conversa é entre dois, macaco fica pra depois!", this.width / 2, this.height / 2);
-        } else if (this.level.level == joseLevel) {
-            this.ctx.fillText("Evaldo NÃO é bolo doido.", this.width / 2, this.height / 2);
-        } else {
-            this.ctx.fillText("Não estou vendo nenhum bolo, no momento!", this.width / 2, this.height / 2);
-        }
+        this.ctx.fillText("Não estou vendo nenhum bolo, no momento!", this.width / 2, this.height / 2);
         this.ctx.font = "30px Arial";
         this.ctx.fillText("(aperte space para reiniciar)", this.width / 2, this.height / 2 + 100);
+    }
+    end() {
+        this.ctx.rect(0, 0, this.width, this.height);
+        this.ctx.fillStyle = "rgb(0, 0, 0)";
+        this.ctx.fill();
+
+        this.ctx.font = "50px Arial";
+        this.ctx.fillStyle = "white";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("Parabéns! Evaldo agora é o Dono da Lage.", this.width / 2, this.height / 2);
     }
     drawText(text, font, color, positionX, positionY) {
         this.ctx.font = font;
@@ -234,7 +236,7 @@ class Game {
             case this.GAME_STAGE.RUNNING:
                 this.gameObjects.forEach(obj => obj.draw());
                 break;
-            case this.GAME_STAGE.ARTHURLEVELFINALANIMATION:
+            case this.GAME_STAGE.JOSELEVELFINALANIMATION:
                 this.level.arthurFinalAnimation();
                 break;
             case this.GAME_STAGE.PAUSED:
@@ -243,6 +245,8 @@ class Game {
             case this.GAME_STAGE.GAMEOVER:
                 this.gameOver();
                 break;
+            case this.GAME_STAGE.END:
+                this.end();
             default:
                 break;
         }
@@ -250,6 +254,7 @@ class Game {
     update() {
         if (this.gameStage == this.GAME_STAGE.MENU || this.gameStage == this.GAME_STAGE.RUNNING) {
             this.gameObjects.forEach(object => object.update());
+            if (this.runningSongPlaying) 
             if (this.runningSongPlaying.ended) this.runningSongPlaying.play();
         }
     }
@@ -264,20 +269,22 @@ class Power {
         this.speedX = (this.game.mainCharater.img == this.game.mainCharater.imgRight) ? 5 : -5;
         this.width = 200;
         this.height = 100;
-        if (this.game.level.level == danielLevel) {
+        if (this.game.level.level == joseLevel) {
             let texts = [
-                "A culpa é sua!",
-                "Tá no fundo do livro!",
-                "Já é outra ?"
+                "7x2 pro Vitória",
+                "6x0 pro Coritiba",
+                "6x0 pro Goiás",
+                "6x2 pro Mirassol",
+                "51 é pinga"
             ];
-            this.nextText = texts[Math.floor(Math.random() * 3)];
+            this.nextText = texts[Math.floor(Math.random() * 5)];
         }
     }
     destruction() {
         this.game.gameObjects.splice(this.game.gameObjects.indexOf(this), 1);
     }
     draw() {
-        if (this.game.level.level == danielLevel) {
+        if (this.game.level.level == joseLevel) {
             this.game.ctx.font = "20px Arial";
             this.game.ctx.fillStyle = "black";
             this.game.ctx.textAlign = "center";
@@ -311,6 +318,9 @@ class LifeBar {
     }
     setColor(color) {
         this.color = color;
+    }
+    setPoints(points) {
+        this.points = points;
     }
     draw() {
         this.game.ctx.rect(this.position.x, this.position.y, this.width, this.height);
@@ -535,7 +545,7 @@ class Boss extends Monster {
         this.lifeBar.setPositionY(this.game.level.lifeBar.position.y +
             this.game.level.lifeBar.height + 10);
         this.lifeBar.setColor("red");
-        this.lifeBar.losePointsQuantity = 50;
+        this.lifeBar.losePointsQuantity = 1;
     }
     shoot() {
         this.balls.push(new Ball(this.game, this.position.x + 300, 20, 1, 360, false));
@@ -570,6 +580,52 @@ class Boss extends Monster {
         this.lifeBar.update();
     }
 }
+class Vitoria extends Monster {
+    constructor(game, imgLeft, imgRight, positionX, positionY, width, height, follow) {
+        super(game, imgLeft, imgRight, positionX, positionY, width, height, follow);
+        this.speedY = 1;
+        this.className = "Vitória";
+        this.direction = "down";
+    }
+    draw() {
+        if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
+            this.game.ctx.drawImage(this.img,
+                (this.position.x),
+                (this.position.y),
+                (this.width),
+                (this.height)
+            );
+    }
+    update() {
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += this.speedX;
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= this.speedX;
+        }
+        if (this.game.mainCharater.lastMove == "left") {
+            this.position.x += this.speedX;
+        } else if (this.game.mainCharater.lastMove == "right") {
+            this.position.x -= this.speedX;
+        }
+        if (this.direction == "down") {
+            this.position.y += this.speedY;
+            if (this.position.y + this.height > this.game.height)
+                this.position.y = this.game.height - this.height;
+            if (this.position.y + this.height >= this.game.height)
+                this.direction = "up";
+        } else {
+            this.position.y -= this.speedY;
+            if (this.position.y < 0)
+                this.position.y = 0;
+            if (this.position.y == 0)
+                this.direction = "down";
+
+        }
+        if (leftColision(this.game.mainCharater, this) ||
+            rightColision(this.game.mainCharater, this))
+            this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
+    }
+}
 class Level {
     constructor(game, level) {
         this.game = game;
@@ -600,6 +656,7 @@ class Level {
         this.createAside();
 
         this.lifeBar = new LifeBar(this.game);
+        this.lifeBar.setPoints(10);
         this.objs.push(this.lifeBar);
 
     }
@@ -621,9 +678,13 @@ class Level {
         }
     }
     createAside() {
-        if (this.aside == document.getElementById("fountain")) {
-            this.objs.push(new Fountain(this.game, this.aside, this.measures[4], this.measures[5], this.measures[8], this.measures[9]));
-            this.objs.push(new Fountain(this.game, this.aside, this.measures[6], this.measures[7], this.measures[8], this.measures[9]));
+        if (this.aside == document.getElementById("Vitória")) {
+            this.objs.push(new Vitoria(this.game, joseLevel.aside, joseLevel.aside,
+                joseLevel.measures[4], joseLevel.measures[5], joseLevel.measures[8],
+                joseLevel.measures[9], false));
+            this.objs.push(new Vitoria(this.game, joseLevel.aside, joseLevel.aside,
+                joseLevel.measures[6], joseLevel.measures[7], joseLevel.measures[8],
+                joseLevel.measures[9], false));
         }
     }
     createBlocks(blockX) {
@@ -639,9 +700,9 @@ class Level {
         let positionX = this.game.mago.position.x - 100;
         let positionY = this.game.mago.position.y - 30;
         let text0 = "Chegastes ao boss dessa fase!";
-        let text1 = "Para derrotá-lo, terás que trocar de corpo!";
-        let text2 = "Desinrugar, virar cobra!";
-        let text3 = "Tudo errado essas pergunta!";
+        let text1 = "Para derrotá-lo, terás que trocar de time!";
+        let text2 = "Pelo amor, quem toma 7 do VITÓRIA ?";
+        let text3 = "Só o Palmares e o Jahia";
         let text4 = "Ganharás um novo poder!";
         let text5 = "Aperte 'q' para liberá-lo!";
         let text6 = "Sê tu forte e corajoso!";
@@ -666,9 +727,9 @@ class Level {
             this.finalAnimationTime = -2;
             this.monsters = [];
             this.game.runGame();
-            this.boss = new Boss(this.game, danielLevel.boss.imgLeft,
-                danielLevel.boss.imgRight, danielLevel.boss.posX, danielLevel.boss.posY,
-                danielLevel.boss.width, danielLevel.boss.height);
+            this.boss = new Boss(this.game, joseLevel.boss.imgLeft,
+                joseLevel.boss.imgRight, joseLevel.boss.posX, joseLevel.boss.posY,
+                joseLevel.boss.width, joseLevel.boss.height);
             this.finalAnimationDone = true;
         }
         this.finalAnimationTime++;
@@ -691,15 +752,16 @@ class Level {
         this.objs.filter(obj => obj.className == "Fountain").forEach(f => f.toggleWater());
 
         if (this.game.x >= 8800 && this.game.x <= 8900 && this.finalAnimationTime != -1) {
-            this.game.gameStage = this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION;
+            this.game.gameStage = this.game.GAME_STAGE.JOSELEVELFINALANIMATION;
             this.game.runningSongPlaying.pause();
         }
         if (this.boss != null) {
             this.boss.update();
 
             if (this.boss.lifeBar.points <= 0) {
-                let nextLevel = document.getElementById("next-level");
-                nextLevel.click();
+                // let nextLevel = document.getElementById("next-level");
+                // nextLevel.click();
+                this.game.gameStage = this.game.GAME_STAGE.END;
             }
         }
 
@@ -715,15 +777,14 @@ class InputHandler {
                         if (this.game.menuAnimationOn != true) {
                             this.game.menuAnimationOn = true;
                         } else {
-                            this.game.level = new Level(this.game, danielLevel);
+                            this.game.level = new Level(this.game, joseLevel);
                             this.game.gameObjects.push(this.game.level);
                             this.game.runGame();
-                            this.game.cobraSong.pause();
                         }
                     } else if (this.game.gameStage == this.game.GAME_STAGE.GAMEOVER) {
-                        this.game.start();
-                        this.game.gameStage = this.game.GAME_STAGE.MENU;
-                    } else if (this.game.gameStage == this.game.GAME_STAGE.ARTHURLEVELFINALANIMATION) {
+                        let sameLevel = document.getElementById("same-level");
+                        sameLevel.click();
+                    } else if (this.game.gameStage == this.game.GAME_STAGE.JOSELEVELFINALANIMATION) {
                         this.game.level.skipFinalAnimation();
                     }
                     break;
@@ -745,7 +806,7 @@ class InputHandler {
                     break;
                 case 81:
                     if (this.game.gameStage == this.game.GAME_STAGE.RUNNING &&
-                        this.game.level.level == danielLevel &&
+                        this.game.level.level == joseLevel &&
                         this.game.level.finalAnimationDone) {
                         this.game.releasePower();
                     }
@@ -949,7 +1010,7 @@ function bottomColision(character, obj) {
         objMiddleX >= cLeft && objMiddleX <= cRight);
 }
 
-GAME_STAGE = { MENU: 0, RUNNING: 1, PAUSED: 2, GAMEOVER: 3, ARTHURLEVELFINALANIMATION: 4 };
+GAME_STAGE = { MENU: 0, RUNNING: 1, PAUSED: 2, GAMEOVER: 3, JOSELEVELFINALANIMATION: 4, END:5 };
 
 
 let game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, ctx, GAME_STAGE);

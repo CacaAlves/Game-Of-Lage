@@ -203,15 +203,7 @@ class Game {
         this.ctx.font = "50px Arial";
         this.ctx.fillStyle = "white";
         this.ctx.textAlign = "center";
-        if (this.level.level == danielLevel) {
-            this.ctx.fillText("Conversa é entre gente, cachorro fica na corrente!", this.width / 2, this.height / 2);
-        } else if (this.level.level == danieLevel) {
-            this.ctx.fillText("Conversa é entre dois, macaco fica pra depois!", this.width / 2, this.height / 2);
-        } else if (this.level.level == joseLevel) {
-            this.ctx.fillText("Evaldo NÃO é bolo doido.", this.width / 2, this.height / 2);
-        } else {
-            this.ctx.fillText("Não estou vendo nenhum bolo, no momento!", this.width / 2, this.height / 2);
-        }
+        this.ctx.fillText("Conversa é entre dois, macaco fica pra depois!", this.width / 2, this.height / 2);
         this.ctx.font = "30px Arial";
         this.ctx.fillText("(aperte space para reiniciar)", this.width / 2, this.height / 2 + 100);
     }
@@ -265,7 +257,7 @@ class Power {
         this.speedX = 0;
         this.timeOfColision = 0;
         this.color = "blue";
-        this.position = { x: this.game.mainCharater.position.x, y:this.game.mainCharater.position.y};
+        this.position = { x: this.game.mainCharater.position.x, y: this.game.mainCharater.position.y };
         if (this.game.mainCharater == "left") {
             this.speedX = -5;
         } else {
@@ -312,7 +304,7 @@ class Power {
     }
     update() {
         if (this.leftColision() || this.rightColision()) {
-            if (this.timeOfColision == 2) {
+            if (this.timeOfColision == 1) {
                 this.game.level.boss.lifeBar.losePoints();
                 this.timeOfColision = 0;
             } else {
@@ -344,7 +336,7 @@ class LifeBar {
     }
     setPoints(points) {
         this.points = points;
-    } 
+    }
     draw() {
         this.game.ctx.rect(this.position.x, this.position.y, this.width, this.height);
         this.game.ctx.stroke();
@@ -572,12 +564,12 @@ class Telephone extends Monster {
     }
     draw() {
         if (this.position.x >= -this.width && this.position.x + this.width <= this.game.width)
-        this.game.ctx.drawImage(this.img,
-            (this.position.x),
-            (this.position.y),
-            (this.width),
-            (this.height)
-        );
+            this.game.ctx.drawImage(this.img,
+                (this.position.x),
+                (this.position.y),
+                (this.width),
+                (this.height)
+            );
     }
     update() {
         if (this.game.mainCharater.lastMove == "left") {
@@ -599,14 +591,14 @@ class Telephone extends Monster {
         } else {
             this.position.y -= this.speedY;
             if (this.position.y < 0)
-            this.position.y = 0;
-            if (this.position.y == 0) 
-            this.direction = "down";
-                
+                this.position.y = 0;
+            if (this.position.y == 0)
+                this.direction = "down";
+
         }
         if (leftColision(this.game.mainCharater, this) ||
             rightColision(this.game.mainCharater, this))
-        this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
+            this.game.gameStage = this.game.GAME_STAGE.GAMEOVER;
     }
 }
 class Level {
